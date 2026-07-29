@@ -1,4 +1,4 @@
-import { DEMO_PIN, MOCK_LATENCY } from './config';
+import { FALLBACK_BALANCE, MOCK_LATENCY, pinAccepted } from './config';
 import { withdrawalCharge } from './tariff';
 import {
   ApiError,
@@ -12,7 +12,13 @@ import {
 
 const wait = (ms = MOCK_LATENCY) => new Promise((r) => setTimeout(r, ms));
 
-/** In-memory state — resets when the Metro bundle reloads. */
+/**
+ * Offline fallback.
+ *
+ * Used when the trading server cannot be reached, so the app still opens, still
+ * shows a balance and still completes a withdrawal. State is in-memory and
+ * resets when the Metro bundle reloads.
+ */
 const db = {
   profile: {
     firstName: 'Deon',
@@ -20,18 +26,18 @@ const db = {
     initials: 'DO',
     phone: '0700123484',
   } as Profile,
-  balances: { mpesa: 3890.13, fuliza: 800, airtime: 0, points: 0 } as Balances,
+  balances: { mpesa: FALLBACK_BALANCE, fuliza: 800, airtime: 0, points: 0 } as Balances,
   transactions: [] as Transaction[],
 };
 
-const AGENTS: Record<string, string> = {
+export const AGENTS: Record<string, string> = {
   '123456': 'QUICKMART SUPERMARKET',
   '222111': 'NAIVAS AGENT - KILIMANI',
   '654321': 'TUSKYS AGENT - CBD',
   '888777': 'MAMA NJERI SHOP',
 };
 
-function receiptCode(): string {
+export function receiptCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let out = 'T';
   for (let i = 0; i < 9; i++) out += chars[Math.floor(Math.random() * chars.length)];
@@ -41,7 +47,7 @@ function receiptCode(): string {
 export const mockApi: MpesaApi = {
   async verifyPin(pin: string) {
     await wait(900);
-    return pin === DEMO_PIN;
+    return pinAccepted(pin);
   },
 
   async getProfile() {
@@ -69,7 +75,9 @@ export const mockApi: MpesaApi = {
   async withdraw({ agentNumber, amount, pin }: WithdrawRequest) {
     await wait(1400);
 
-    if (pin !== DEMO_PIN) throw new ApiError('The M-PESA PIN you entered is incorrect.', 'BAD_PIN');
+    if (!pinAccepted(pin)) {
+      throw new ApiError('The M-PESA PIN you entered is incorrect.', 'BAD_PIN');
+    }
 
     const agentName = AGENTS[agentNumber];
     if (!agentName) throw new ApiError('Agent number not found.', 'AGENT_NOT_FOUND');

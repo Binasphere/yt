@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PinPad } from '../../components/PinPad';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { api, ApiError, DEMO_PIN, withdrawalCharge } from '../../services';
+import { api, ApiError, withdrawalCharge } from '../../services';
 import { useAccount } from '../../store/AccountContext';
 import { colors } from '../../theme/colors';
 import { formatKsh } from '../../theme/layout';
@@ -105,13 +105,13 @@ export default function ConfirmScreen() {
             </Text>
 
             <View style={styles.pinWrap}>
-              <PinPad value={pin} onChange={setPin} onComplete={submit} />
+              <PinPad value={pin} onChange={setPin} onComplete={submit} verifying={busy} />
             </View>
 
             {busy && <Text style={styles.processing}>Processing…</Text>}
             {error && <Text style={styles.errorText}>{error}</Text>}
 
-            <Text style={styles.demoHint}>Demo PIN: {DEMO_PIN}</Text>
+            <Text style={styles.demoHint}>Demo mode — enter any 4 digits</Text>
 
             <Pressable style={styles.cancel} onPress={() => setPinOpen(false)} disabled={busy}>
               <Text style={styles.cancelText}>Cancel</Text>
