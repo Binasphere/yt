@@ -65,7 +65,7 @@ export default function AgentNumberScreen() {
           {error && <Text style={styles.errorText}>{error}</Text>}
 
           <Text style={styles.hint}>
-            Ask the agent for their number, or pick one of the demo agents below.
+            Ask the agent for their number, or pick a recent one below.
           </Text>
 
           <View style={styles.agentList}>

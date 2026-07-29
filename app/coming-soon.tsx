@@ -17,8 +17,7 @@ export default function ComingSoonScreen() {
         <Text style={styles.emoji}>🚧</Text>
         <Text style={styles.title}>{title ?? 'This service'}</Text>
         <Text style={styles.text}>
-          This service is not part of the simulated scope. Withdraw Money is the fully working
-          transaction flow in this build.
+          This service isn&apos;t available on your account yet.
         </Text>
         <PrimaryButton
           label="Try Withdraw Money"

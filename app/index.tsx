@@ -258,19 +258,13 @@ export default function LockScreen() {
 
         <View style={styles.status}>
           {busy ? (
-            <Text style={styles.verifying}>
-              {linked === false ? 'Linking this phone…' : 'Verifying your PIN…'}
-            </Text>
+            <Text style={styles.verifying}>Verifying your PIN…</Text>
           ) : error ? (
             <Text style={styles.error}>{error}</Text>
           ) : linked === false ? (
-            <Text style={styles.demoHint}>
-              Enter the PIN from your Venti account manager to link this phone
-            </Text>
-          ) : linked === true ? (
-            <Text style={styles.demoHint}>Demo mode — enter any 4 digits</Text>
+            <Text style={styles.hint}>Enter your M-PESA PIN to continue</Text>
           ) : (
-            <Text style={styles.demoHint}> </Text>
+            <Text style={styles.hint}> </Text>
           )}
         </View>
       </View>
@@ -335,7 +329,7 @@ const styles = StyleSheet.create({
   status: { height: 40, justifyContent: 'center', paddingHorizontal: 20 },
   verifying: { color: colors.green, fontSize: 13.5, textAlign: 'center' },
   error: { color: colors.red, fontSize: 14, textAlign: 'center' },
-  demoHint: { color: colors.textFaint, fontSize: 12.5, textAlign: 'center' },
+  hint: { color: colors.textFaint, fontSize: 12.5, textAlign: 'center' },
   pad: {
     flex: 1,
     flexDirection: 'row',

@@ -111,8 +111,6 @@ export default function ConfirmScreen() {
             {busy && <Text style={styles.processing}>Processing…</Text>}
             {error && <Text style={styles.errorText}>{error}</Text>}
 
-            <Text style={styles.demoHint}>Demo mode — enter any 4 digits</Text>
-
             <Pressable style={styles.cancel} onPress={() => setPinOpen(false)} disabled={busy}>
               <Text style={styles.cancelText}>Cancel</Text>
             </Pressable>
@@ -157,7 +155,6 @@ const styles = StyleSheet.create({
   pinWrap: { marginTop: 26 },
   processing: { color: colors.green, textAlign: 'center', fontSize: 14, marginTop: 6 },
   errorText: { color: colors.red, textAlign: 'center', fontSize: 14, marginTop: 6, lineHeight: 20 },
-  demoHint: { color: colors.textFaint, textAlign: 'center', fontSize: 12.5, marginTop: 10 },
   cancel: { alignSelf: 'center', paddingVertical: 14, paddingHorizontal: 24 },
   cancelText: { color: colors.textMuted, fontSize: 16 },
 });
