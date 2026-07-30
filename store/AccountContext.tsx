@@ -11,6 +11,8 @@ type AccountState = {
   /** Global "hide my money" toggle, mirroring the eye icon on the balance card. */
   hidden: boolean;
   toggleHidden(): void;
+  /** Forces the balance back behind the mask, whatever the eye last said. */
+  hideBalance(): void;
   refresh(): Promise<void>;
 };
 
@@ -22,7 +24,9 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hidden, setHidden] = useState(false);
+  // Starts masked, every launch. The eye is the only thing that reveals it, and
+  // it never stays revealed across a trip to the background.
+  const [hidden, setHidden] = useState(true);
 
   /**
    * Reads the account.
@@ -83,6 +87,8 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  const hideBalance = useCallback(() => setHidden(true), []);
+
   const value = useMemo<AccountState>(
     () => ({
       profile,
@@ -92,9 +98,10 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       error,
       hidden,
       toggleHidden: () => setHidden((h) => !h),
+      hideBalance,
       refresh,
     }),
-    [profile, balances, transactions, loading, error, hidden, refresh]
+    [profile, balances, transactions, loading, error, hidden, hideBalance, refresh]
   );
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;

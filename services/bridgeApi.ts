@@ -1,5 +1,6 @@
 import { BASE_URL, REQUEST_TIMEOUT, pinAccepted } from './config';
 import { currentToken, loadToken, unlinkDevice } from './link';
+import { fulizaLimit } from './fuliza';
 import { AGENTS, mockApi, receiptCode } from './mockApi';
 import { withdrawalCharge } from './tariff';
 import {
@@ -162,10 +163,13 @@ export const bridgeApi: MpesaApi = {
 
   async getBalances(): Promise<Balances> {
     try {
-      const { balanceMinor } = await account();
+      const { balanceMinor, profile } = await account();
+      const mpesa = Number((balanceMinor / 100).toFixed(2));
       return {
-        mpesa: Number((balanceMinor / 100).toFixed(2)),
-        fuliza: 800,
+        mpesa,
+        // Seeded on the phone number so the limit is the same every time this
+        // account is read, rather than reshuffling under the four-second poll.
+        fuliza: fulizaLimit(mpesa, profile?.phone ?? 'offline'),
         airtime: 0,
         points: 0,
       };

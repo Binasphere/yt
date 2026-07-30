@@ -1,4 +1,5 @@
 import { FALLBACK_BALANCE, MOCK_LATENCY, pinAccepted } from './config';
+import { fulizaLimit } from './fuliza';
 import { withdrawalCharge } from './tariff';
 import {
   ApiError,
@@ -21,12 +22,14 @@ const wait = (ms = MOCK_LATENCY) => new Promise((r) => setTimeout(r, ms));
  */
 const db = {
   profile: {
-    firstName: 'Deon',
-    lastName: 'Orina',
-    initials: 'DO',
-    phone: '0700123484',
+    firstName: 'Customer',
+    lastName: '',
+    initials: 'MC',
+    phone: '0700000000',
   } as Profile,
-  balances: { mpesa: FALLBACK_BALANCE, fuliza: 800, airtime: 0, points: 0 } as Balances,
+  // Fuliza is not stored: it is a function of the balance (see `fuliza.ts`),
+  // so keeping a copy here would only let the two drift apart.
+  balances: { mpesa: FALLBACK_BALANCE, airtime: 0, points: 0 } as Omit<Balances, 'fuliza'>,
   transactions: [] as Transaction[],
 };
 
@@ -57,7 +60,10 @@ export const mockApi: MpesaApi = {
 
   async getBalances() {
     await wait();
-    return { ...db.balances };
+    return {
+      ...db.balances,
+      fuliza: fulizaLimit(db.balances.mpesa, db.profile.phone),
+    };
   },
 
   async getTransactions() {

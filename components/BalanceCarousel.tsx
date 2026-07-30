@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   cardContent: { paddingHorizontal: 18, paddingTop: 14, paddingBottom: 14 },
   label: { color: colors.green, fontSize: 15, fontWeight: '600' },
   amountRow: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
-  amount: { color: colors.text, fontSize: 29, fontWeight: '700', letterSpacing: -0.2 },
+  amount: { color: colors.text, fontSize: 25, fontWeight: '700', letterSpacing: -0.2 },
   eye: { marginLeft: 14 },
   sub: { color: colors.textMuted, fontSize: 15, marginTop: 5 },
   outlineBtn: {

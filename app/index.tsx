@@ -17,7 +17,7 @@ const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'bio', '0', 'del'];
 const BOUNCE_STEP = 220;
 const BOUNCE_STAGGER = 110;
 
-/** 0700123484 -> 070*****84 */
+/** 0712345678 -> 071*****78 */
 function maskPhone(phone: string): string {
   if (phone.length < 5) return phone;
   return `${phone.slice(0, 3)}${'*'.repeat(phone.length - 5)}${phone.slice(-2)}`;
