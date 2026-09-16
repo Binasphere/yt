@@ -166,6 +166,11 @@ export const bridgeApi: MpesaApi = {
   async getProfile(): Promise<Profile> {
     try {
       const { holderName, phone } = await account();
+      // Accounts store numbers in international form (254712345678), and a
+      // handset showing 254*******78 on its lock screen is the one detail in
+      // the room that says this is not really M-PESA. Rendered the way a
+      // Kenyan phone renders it: 0712345678, masked to 071*****78.
+      const local = /^254\d{9}$/.test(phone ?? '') ? '0' + (phone as string).slice(3) : (phone ?? '');
       const parts = String(holderName || '').trim().split(/\s+/).filter(Boolean);
       const firstName = parts[0] ?? 'M-PESA';
       const lastName = parts.slice(1).join(' ') || 'User';
@@ -174,7 +179,7 @@ export const bridgeApi: MpesaApi = {
         firstName,
         lastName,
         initials: initials.toUpperCase(),
-        phone: phone ?? '',
+        phone: local,
       };
     } catch {
       return mockApi.getProfile();

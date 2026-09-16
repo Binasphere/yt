@@ -60,8 +60,8 @@ const styles = StyleSheet.create({
     zIndex: 100,
     elevation: 100,
     // The image's own background, so the edges of a device it does not exactly
-    // fit are the same colour rather than a white or black band.
-    backgroundColor: '#D3F8DF',
+    // fit are the same colour rather than a grey or black band.
+    backgroundColor: '#FFFFFF',
   },
   centre: {
     flex: 1,

@@ -11,14 +11,14 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#D3F8DF"
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#FFFFFF",
+        "backgroundColor": "#45B14A",
         "foregroundImage": "./assets/mpesa-adaptive-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
