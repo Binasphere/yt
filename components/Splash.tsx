@@ -56,7 +56,7 @@ export function Splash() {
 
 const styles = StyleSheet.create({
   fill: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 100,
     elevation: 100,
     // The image's own background, so the edges of a device it does not exactly
