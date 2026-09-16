@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Splash } from '../components/Splash';
 import { AccountProvider, useAccount } from '../store/AccountContext';
 import { colors } from '../theme/colors';
 
@@ -50,6 +51,8 @@ export default function RootLayout() {
           <Stack.Screen name="statements" />
           <Stack.Screen name="coming-soon" options={{ animation: 'slide_from_bottom' }} />
         </Stack>
+        {/* Last child, so it paints over the stack rather than under it. */}
+        <Splash />
       </AccountProvider>
     </SafeAreaProvider>
   );

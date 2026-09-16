@@ -1,6 +1,5 @@
-import { BASE_URL, REQUEST_TIMEOUT, pinAccepted } from './config';
-import { currentToken, loadToken, unlinkDevice } from './link';
-import { fulizaLimit } from './fuliza';
+import { BASE_URL, REQUEST_TIMEOUT } from './config';
+import { currentToken, loadToken, pinAccepted, unlinkDevice } from './link';
 import { AGENTS, mockApi, receiptCode } from './mockApi';
 import { withdrawalCharge } from './tariff';
 import {
@@ -20,7 +19,7 @@ import {
  * One wallet in Supabase is the truth for both apps, so money the terminal
  * takes for a deposit disappears from this screen and money it pays out for a
  * withdrawal arrives here. Everything this app needs comes from a single
- * `/api/mpesa/account` read, cached briefly so the three `useAccount` calls
+ * `/mpesa/account` read, cached briefly so the three `useAccount` calls
  * behind one refresh do not become three requests.
  *
  * Which wallet that is comes from the device token this handset was given when
@@ -31,24 +30,31 @@ import {
  * The app is a demo prop: showing a stale balance beats showing an error.
  */
 
-interface RailProfile {
-  phone: string;
-  firstName: string;
-  lastName: string;
-  initials: string;
-}
-
+/**
+ * What GET /mpesa/account answers with.
+ *
+ * Fuliza arrives from the rail rather than being derived here. It used to be
+ * computed from the balance, because there was nothing authoritative to ask;
+ * now an admin sets the limit per wallet in the console and the server tracks
+ * what is owed, so a number invented on the phone would simply be wrong.
+ */
 interface RailAccount {
-  linked: boolean;
-  profile: RailProfile | null;
   balanceMinor: number;
-  transactions: {
+  fuliza: {
+    limitMinor: number;
+    usedMinor: number;
+    availableMinor: number;
+  };
+  holderName: string;
+  phone: string | null;
+  statement: {
     id: string;
-    kind: 'DEPOSIT' | 'WITHDRAWAL' | 'AGENT_WITHDRAWAL';
+    kind: 'DEPOSIT' | 'WITHDRAWAL' | 'AGENT_WITHDRAWAL' | 'RECEIVE' | 'FULIZA_REPAY' | 'REVERSAL';
     title: string;
     subtitle: string;
     amountMinor: number;
     balanceAfterMinor: number;
+    fulizaAfterMinor: number;
     reference: string;
     at: string;
   }[];
@@ -83,9 +89,14 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
       // The wallet behind this token is gone — the admin unlinked or cleared
       // it. Drop the token so the lock screen asks for a PIN again rather than
       // retrying a binding that no longer exists.
-      if (body?.code === 'NOT_LINKED') void unlinkDevice();
+      // 401 means the wallet behind this token is gone: an admin cleared it
+      // or reissued the handset. Drop the binding so the lock screen asks for
+      // a PIN again rather than retrying one that no longer exists.
+      if (res.status === 401) void unlinkDevice();
 
-      throw new ApiError(body?.error ?? `Request failed (${res.status})`, body?.code ?? 'HTTP_ERROR');
+      const code = body?.error?.code ?? 'HTTP_ERROR';
+      const message = body?.error?.message ?? `Request failed (${res.status})`;
+      throw new ApiError(message, code);
     }
 
     bridgeOnline = true;
@@ -112,8 +123,9 @@ async function account(): Promise<RailAccount> {
   if (cached && Date.now() - cached.at < CACHE_MS) return cached.value;
   if (inFlight) return inFlight;
 
-  inFlight = call<RailAccount>('/api/mpesa/account')
-    .then((value) => {
+  inFlight = call<{ account: RailAccount }>('/mpesa/account')
+    .then((body) => {
+      const value = body.account;
       cached = { at: Date.now(), value };
       return value;
     })
@@ -129,10 +141,13 @@ function invalidate(): void {
   cached = null;
 }
 
-const KIND: Record<RailAccount['transactions'][number]['kind'], TxKind> = {
+const KIND: Record<RailAccount['statement'][number]['kind'], TxKind> = {
   DEPOSIT: 'paybill',
   WITHDRAWAL: 'receive',
   AGENT_WITHDRAWAL: 'withdraw',
+  RECEIVE: 'receive',
+  FULIZA_REPAY: 'paybill',
+  REVERSAL: 'receive',
 };
 
 // ---------------------------------------------------------------------------
@@ -141,20 +156,25 @@ const KIND: Record<RailAccount['transactions'][number]['kind'], TxKind> = {
 
 export const bridgeApi: MpesaApi = {
   async verifyPin(pin: string) {
-    // The PIN is a demo formality — no account on the rail has one.
-    await new Promise((r) => setTimeout(r, 900));
+    // Checked against the PIN this handset was linked with, which is the one
+    // the admin assigned to this wallet. The pause is the unlock animation,
+    // not a network call: the answer is already known on the device.
+    await new Promise((r) => setTimeout(r, 650));
     return pinAccepted(pin);
   },
 
   async getProfile(): Promise<Profile> {
     try {
-      const { profile } = await account();
-      if (!profile) return mockApi.getProfile();
+      const { holderName, phone } = await account();
+      const parts = String(holderName || '').trim().split(/\s+/).filter(Boolean);
+      const firstName = parts[0] ?? 'M-PESA';
+      const lastName = parts.slice(1).join(' ') || 'User';
+      const initials = (firstName[0] ?? 'M') + (lastName[0] ?? 'U');
       return {
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        initials: profile.initials,
-        phone: profile.phone,
+        firstName,
+        lastName,
+        initials: initials.toUpperCase(),
+        phone: phone ?? '',
       };
     } catch {
       return mockApi.getProfile();
@@ -163,13 +183,13 @@ export const bridgeApi: MpesaApi = {
 
   async getBalances(): Promise<Balances> {
     try {
-      const { balanceMinor, profile } = await account();
-      const mpesa = Number((balanceMinor / 100).toFixed(2));
+      const { balanceMinor, fuliza } = await account();
       return {
-        mpesa,
-        // Seeded on the phone number so the limit is the same every time this
-        // account is read, rather than reshuffling under the four-second poll.
-        fuliza: fulizaLimit(mpesa, profile?.phone ?? 'offline'),
+        mpesa: Number((balanceMinor / 100).toFixed(2)),
+        // What is left to draw on, not the headline limit: a customer who has
+        // already used 2,000 of 5,000 has 3,000, and showing them 5,000 is the
+        // one number on this screen that would make them overdraw by mistake.
+        fuliza: Number((fuliza.availableMinor / 100).toFixed(2)),
         airtime: 0,
         points: 0,
       };
@@ -180,8 +200,8 @@ export const bridgeApi: MpesaApi = {
 
   async getTransactions(): Promise<Transaction[]> {
     try {
-      const { transactions } = await account();
-      return transactions.map((t) => ({
+      const { statement } = await account();
+      return statement.map((t) => ({
         id: t.id,
         receipt: t.reference,
         kind: KIND[t.kind] ?? 'withdraw',
@@ -213,28 +233,29 @@ export const bridgeApi: MpesaApi = {
     const charge = withdrawalCharge(amount);
 
     try {
-      const res = await call<{ reference: string; balanceMinor: number; at: string }>(
-        '/api/mpesa/agent-withdraw',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            amountMinor: Math.round(amount * 100),
-            chargeMinor: Math.round(charge * 100),
-            agentNumber,
-            agentName,
-          }),
-        }
-      );
+      const res = await call<{
+        balanceMinor: number;
+        tx: { reference: string; at: string };
+      }>('/mpesa/agent-withdraw', {
+        method: 'POST',
+        body: JSON.stringify({
+          // The charge is taken as part of the same movement: the rail books
+          // one debit, and a statement that shows the fee as a separate line
+          // from the withdrawal is a statement that has to be reconciled.
+          amountMinor: Math.round((amount + charge) * 100),
+          agent: agentName,
+        }),
+      });
 
       invalidate();
 
       return {
-        receipt: res.reference,
+        receipt: res.tx.reference,
         agentName,
         amount,
         charge,
         balanceAfter: res.balanceMinor / 100,
-        date: res.at,
+        date: res.tx.at,
       };
     } catch (e) {
       // A refusal from the server is a real answer — surface it. Only a dead

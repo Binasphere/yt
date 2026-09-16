@@ -122,13 +122,14 @@ export default function LockScreen() {
    * been linked before.
    *
    * **Unlinked** — the PIN is an identity. It is the one the admin assigned to
-   * a VIP in the Venti console, and the rail exchanges it for a device token
+   * a VIP in the Novi console, and the rail exchanges it for a device token
    * that binds this handset to that account. Typed once, kept forever.
    *
-   * **Linked** — the PIN is only the lock screen, exactly as on a real phone.
-   * The binding already exists, so any four digits open it; nothing here is
-   * guarding anything, and a demo that stalls because someone misremembered a
-   * PIN on stage is worse than no lock at all.
+   * **Linked** the same PIN now unlocks the app, checked on the device
+   * against the one it linked with. It used to accept any four digits, on the
+   * reasoning that nothing was being guarded. That stopped being true when
+   * each VIP got their own wallet: a phone that opens on 0000 is a phone that
+   * shows one customer's balance to whoever picks it up in the room.
    */
   const submit = async (entered: string) => {
     setBusy(true);

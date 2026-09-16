@@ -9,9 +9,9 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#000000",
     "splash": {
-      "image": "./assets/logo.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#D3F8DF"
     },
     "ios": {
       "supportsTablet": false

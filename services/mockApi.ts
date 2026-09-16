@@ -1,4 +1,5 @@
-import { FALLBACK_BALANCE, MOCK_LATENCY, pinAccepted } from './config';
+import { FALLBACK_BALANCE, MOCK_LATENCY } from './config';
+import { pinAccepted } from './link';
 import { fulizaLimit } from './fuliza';
 import { withdrawalCharge } from './tariff';
 import {
