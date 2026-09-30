@@ -1,4 +1,6 @@
-import { BASE_URL, REQUEST_TIMEOUT } from './config';
+import { BASE_URL, REQUEST_TIMEOUT, rail } from './config';
+import { fulizaLimit } from './fuliza';
+import type { RailAccount } from './rails/types';
 import { currentToken, loadToken, pinAccepted, unlinkDevice } from './link';
 import { AGENTS, mockApi, receiptCode } from './mockApi';
 import { withdrawalCharge } from './tariff';
@@ -19,7 +21,7 @@ import {
  * One wallet in Supabase is the truth for both apps, so money the terminal
  * takes for a deposit disappears from this screen and money it pays out for a
  * withdrawal arrives here. Everything this app needs comes from a single
- * `/mpesa/account` read, cached briefly so the three `useAccount` calls
+ * account read on the active rail (see `config.ts`), cached briefly so the three `useAccount` calls
  * behind one refresh do not become three requests.
  *
  * Which wallet that is comes from the device token this handset was given when
@@ -29,36 +31,6 @@ import {
  * Every call falls back to the offline data in `mockApi` rather than throwing.
  * The app is a demo prop: showing a stale balance beats showing an error.
  */
-
-/**
- * What GET /mpesa/account answers with.
- *
- * Fuliza arrives from the rail rather than being derived here. It used to be
- * computed from the balance, because there was nothing authoritative to ask;
- * now an admin sets the limit per wallet in the console and the server tracks
- * what is owed, so a number invented on the phone would simply be wrong.
- */
-interface RailAccount {
-  balanceMinor: number;
-  fuliza: {
-    limitMinor: number;
-    usedMinor: number;
-    availableMinor: number;
-  };
-  holderName: string;
-  phone: string | null;
-  statement: {
-    id: string;
-    kind: 'DEPOSIT' | 'WITHDRAWAL' | 'AGENT_WITHDRAWAL' | 'RECEIVE' | 'FULIZA_REPAY' | 'REVERSAL';
-    title: string;
-    subtitle: string;
-    amountMinor: number;
-    balanceAfterMinor: number;
-    fulizaAfterMinor: number;
-    reference: string;
-    at: string;
-  }[];
-}
 
 /** Whether the last call reached the trading server. Screens may show this. */
 export let bridgeOnline = false;
@@ -86,16 +58,12 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
     if (!res.ok) {
       bridgeOnline = true; // The server answered; it just refused.
 
-      // The wallet behind this token is gone — the admin unlinked or cleared
-      // it. Drop the token so the lock screen asks for a PIN again rather than
-      // retrying a binding that no longer exists.
-      // 401 means the wallet behind this token is gone: an admin cleared it
-      // or reissued the handset. Drop the binding so the lock screen asks for
-      // a PIN again rather than retrying one that no longer exists.
-      if (res.status === 401) void unlinkDevice();
+      // The wallet behind this token is gone: an admin cleared it or
+      // reissued the handset. Drop the binding so the lock screen asks for a
+      // PIN again rather than retrying one that no longer exists.
+      if (rail.isUnlinked(res.status, body)) void unlinkDevice();
 
-      const code = body?.error?.code ?? 'HTTP_ERROR';
-      const message = body?.error?.message ?? `Request failed (${res.status})`;
+      const { code, message } = rail.parseError(body, res.status);
       throw new ApiError(message, code);
     }
 
@@ -123,9 +91,9 @@ async function account(): Promise<RailAccount> {
   if (cached && Date.now() - cached.at < CACHE_MS) return cached.value;
   if (inFlight) return inFlight;
 
-  inFlight = call<{ account: RailAccount }>('/mpesa/account')
+  inFlight = call<unknown>(rail.paths.account)
     .then((body) => {
-      const value = body.account;
+      const value = rail.parseAccount(body);
       cached = { at: Date.now(), value };
       return value;
     })
@@ -141,7 +109,8 @@ function invalidate(): void {
   cached = null;
 }
 
-const KIND: Record<RailAccount['statement'][number]['kind'], TxKind> = {
+// Both rails' kinds; an unknown one falls back to 'withdraw'.
+const KIND: Record<string, TxKind> = {
   DEPOSIT: 'paybill',
   WITHDRAWAL: 'receive',
   AGENT_WITHDRAWAL: 'withdraw',
@@ -165,22 +134,11 @@ export const bridgeApi: MpesaApi = {
 
   async getProfile(): Promise<Profile> {
     try {
-      const { holderName, phone } = await account();
-      // Accounts store numbers in international form (254712345678), and a
+      // The rails hand back the number in local form (0712345678): a
       // handset showing 254*******78 on its lock screen is the one detail in
-      // the room that says this is not really M-PESA. Rendered the way a
-      // Kenyan phone renders it: 0712345678, masked to 071*****78.
-      const local = /^254\d{9}$/.test(phone ?? '') ? '0' + (phone as string).slice(3) : (phone ?? '');
-      const parts = String(holderName || '').trim().split(/\s+/).filter(Boolean);
-      const firstName = parts[0] ?? 'M-PESA';
-      const lastName = parts.slice(1).join(' ') || 'User';
-      const initials = (firstName[0] ?? 'M') + (lastName[0] ?? 'U');
-      return {
-        firstName,
-        lastName,
-        initials: initials.toUpperCase(),
-        phone: local,
-      };
+      // the room that says this is not really M-PESA.
+      const { firstName, lastName, initials, phone } = await account();
+      return { firstName, lastName, initials, phone };
     } catch {
       return mockApi.getProfile();
     }
@@ -188,13 +146,16 @@ export const bridgeApi: MpesaApi = {
 
   async getBalances(): Promise<Balances> {
     try {
-      const { balanceMinor, fuliza } = await account();
+      const { balanceMinor, fulizaAvailableMinor, phone } = await account();
+      const mpesa = Number((balanceMinor / 100).toFixed(2));
       return {
-        mpesa: Number((balanceMinor / 100).toFixed(2)),
-        // What is left to draw on, not the headline limit: a customer who has
-        // already used 2,000 of 5,000 has 3,000, and showing them 5,000 is the
-        // one number on this screen that would make them overdraw by mistake.
-        fuliza: Number((fuliza.availableMinor / 100).toFixed(2)),
+        mpesa,
+        // What is left to draw on when the rail tracks it (Novi); otherwise a
+        // limit seeded on the number, so it holds steady under the poll.
+        fuliza:
+          fulizaAvailableMinor === null
+            ? fulizaLimit(mpesa, phone || 'offline')
+            : Number((fulizaAvailableMinor / 100).toFixed(2)),
         airtime: 0,
         points: 0,
       };
@@ -238,29 +199,22 @@ export const bridgeApi: MpesaApi = {
     const charge = withdrawalCharge(amount);
 
     try {
-      const res = await call<{
-        balanceMinor: number;
-        tx: { reference: string; at: string };
-      }>('/mpesa/agent-withdraw', {
-        method: 'POST',
-        body: JSON.stringify({
-          // The charge is taken as part of the same movement: the rail books
-          // one debit, and a statement that shows the fee as a separate line
-          // from the withdrawal is a statement that has to be reconciled.
-          amountMinor: Math.round((amount + charge) * 100),
-          agent: agentName,
+      const res = rail.parseAgentWithdraw(
+        await call<unknown>(rail.paths.agentWithdraw, {
+          method: 'POST',
+          body: JSON.stringify(rail.agentWithdrawBody({ amount, charge, agentNumber, agentName })),
         }),
-      });
+      );
 
       invalidate();
 
       return {
-        receipt: res.tx.reference,
+        receipt: res.reference,
         agentName,
         amount,
         charge,
         balanceAfter: res.balanceMinor / 100,
-        date: res.tx.at,
+        date: res.at,
       };
     } catch (e) {
       // A refusal from the server is a real answer — surface it. Only a dead

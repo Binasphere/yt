@@ -1,11 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ACCEPT_ANY_PIN, BASE_URL, REQUEST_TIMEOUT } from './config';
+import { ACCEPT_ANY_PIN, BASE_URL, REQUEST_TIMEOUT, rail } from './config';
 
 /**
  * The handset's link to a VIP account.
  *
  * The phone has no session on the trading platform and no account of its own.
- * What it has is a four digit PIN an admin assigned in the Novi console: typed
+ * What it has is a four digit PIN an admin assigned in the active rail's console: typed
  * once, it is exchanged for a `deviceToken` that identifies exactly one wallet.
  * The token is kept in storage from then on, so the binding survives the app
  * being closed and the customer never types the PIN to identify themselves
@@ -18,8 +18,9 @@ import { ACCEPT_ANY_PIN, BASE_URL, REQUEST_TIMEOUT } from './config';
  * the operator; it guards a prop balance and nothing else.
  */
 
-const TOKEN_KEY = 'novi.mpesa.deviceToken';
-const PIN_KEY = 'novi.mpesa.pin';
+// Per rail, so switching projects keeps each one's pairing.
+const TOKEN_KEY = rail.tokenKey;
+const PIN_KEY = rail.pinKey;
 
 let token: string | null = null;
 let pin: string | null = null;
@@ -104,7 +105,7 @@ export async function linkWithPin(entered: string): Promise<LinkResult> {
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
   try {
-    const res = await fetch(`${BASE_URL}/mpesa/link`, {
+    const res = await fetch(`${BASE_URL}${rail.paths.link}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pin: entered }),
@@ -116,14 +117,15 @@ export async function linkWithPin(entered: string): Promise<LinkResult> {
     if (!res.ok) {
       return {
         ok: false,
-        reason: body?.error?.message ?? 'Wrong PIN. Please try again.',
+        reason: rail.parseError(body, res.status).message || 'Wrong PIN. Please try again.',
       };
     }
-    if (!body?.deviceToken) {
+    const deviceToken = rail.parseLink(body);
+    if (!deviceToken) {
       return { ok: false, reason: 'The rail did not return a device token.' };
     }
 
-    await store(String(body.deviceToken), entered);
+    await store(deviceToken, entered);
     return { ok: true };
   } catch {
     return {

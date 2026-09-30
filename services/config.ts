@@ -1,45 +1,37 @@
 /**
  * Where the app gets its money from.
  *
- * This handset is the customer side of Novi's VIP demo rail. One wallet lives
- * in the Novi database and two things read it: this phone, and the trading
- * terminal the customer deposits from. So money the terminal takes for a
- * deposit disappears from this screen within a poll, and money paid back
- * arrives here, because both are looking at the same row.
- *
- * It previously pointed at the Venti payments service (`/api/mpesa/*` on
- * trad-z5gt.onrender.com). That rail is retired for this build: the routes now
- * live on the Novi API under `/mpesa/*`, which is both a different host and a
- * different path shape, so the two had to change together.
+ * This handset serves two projects, each with its own demo M-PESA rail. The
+ * active one is chosen here: exactly one pair of lines below is live. To
+ * switch projects, comment out the live pair and uncomment the other. Each
+ * rail keeps its own stored link, so switching back does not lose a pairing.
  *
  * If the rail cannot be reached the app falls back to its own in-memory data
  * and keeps working. A demo that dies because a laptop changed Wi-Fi is worse
  * than a demo running on local numbers.
  */
 
-/** Set to false to ignore the trading server entirely and run standalone. */
-export const USE_BRIDGE = true;
+// --- Venti (trading terminal VIP rail): ACTIVE -----------------------------
+import { rail as activeRail } from './rails/venti';
+export const rail = activeRail;
 
-/**
- * The Novi API.
- *
- * Preferred over anything on a laptop because it needs no Wi-Fi arrangement:
- * the handset reaches it over mobile data, from any room, and it is the same
- * origin the deployed terminal talks to. Both read one wallet, so choosing this
- * one never means seeing a different balance from the person demonstrating.
- */
-const REMOTE_BASE_URL = 'https://backend-avzc.onrender.com';
+// --- Novi: uncomment these two and comment the two above to switch ---------
+// import { rail as activeRail } from './rails/novi';
+// export const rail = activeRail;
+
+/** Set to false to ignore the rail entirely and run standalone. */
+export const USE_BRIDGE = true;
 
 /**
  * Which host to use.
  *
- *   'remote'      the Novi API. The default, and what to use when demoing.
- *   a full origin e.g. 'http://192.168.1.42:8080', to pin a backend running on
+ *   'remote'      the active rail's deployed backend. What to use when demoing.
+ *   a full origin e.g. 'http://192.168.1.42:8790', to pin a backend running on
  *                 a laptop while developing. The phone must be on that network.
  */
 const PREFER: 'remote' | string = 'remote';
 
-export const BASE_URL = PREFER === 'remote' ? REMOTE_BASE_URL : PREFER;
+export const BASE_URL = PREFER === 'remote' ? rail.baseUrl : PREFER;
 
 /** How often the home screen re-reads the account, in ms. */
 export const POLL_INTERVAL = 4000;

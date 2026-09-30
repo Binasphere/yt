@@ -122,7 +122,7 @@ export default function LockScreen() {
    * been linked before.
    *
    * **Unlinked** — the PIN is an identity. It is the one the admin assigned to
-   * a VIP in the Novi console, and the rail exchanges it for a device token
+   * a VIP in the active rail's console, and the rail exchanges it for a device token
    * that binds this handset to that account. Typed once, kept forever.
    *
    * **Linked** the same PIN now unlocks the app, checked on the device
