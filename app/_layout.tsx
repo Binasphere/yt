@@ -1,5 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
 import React, { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -36,6 +37,13 @@ function AutoLock() {
 /** Everything that has to repaint when the theme flips lives under here. */
 function ThemedApp() {
   const { scheme } = useTheme();
+
+  // The window behind every screen. Matching it to the page means a transition
+  // never flashes a strip of a different colour.
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(colors.screen).catch(() => {});
+  }, [scheme]);
+
   return (
     <>
       <AutoLock />
@@ -44,11 +52,14 @@ function ThemedApp() {
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.screen },
-          animation: 'slide_from_right',
+          // A short cross-fade instead of a slide: the page changes, nothing
+          // swoops across the screen.
+          animation: 'fade',
+          animationDuration: 180,
         }}
       >
-        <Stack.Screen name="index" options={{ animation: 'fade' }} />
-        <Stack.Screen name="home" options={{ animation: 'fade' }} />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="home" />
         <Stack.Screen name="withdraw" />
         <Stack.Screen name="statements" />
         <Stack.Screen name="send-money" />
@@ -56,7 +67,7 @@ function ThemedApp() {
         <Stack.Screen name="lipa" />
         <Stack.Screen name="balances" />
         <Stack.Screen name="notifications" />
-        <Stack.Screen name="coming-soon" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="coming-soon" />
       </Stack>
       {/* Last child, so it paints over the stack rather than under it. */}
       <Splash />

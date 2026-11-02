@@ -10,7 +10,8 @@ export default function WithdrawLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: colors.screen },
-        animation: 'slide_from_right',
+        animation: 'fade',
+        animationDuration: 180,
       }}
     />
   );
