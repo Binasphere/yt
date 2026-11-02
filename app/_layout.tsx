@@ -52,10 +52,9 @@ function ThemedApp() {
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.screen },
-          // A short cross-fade instead of a slide: the page changes, nothing
-          // swoops across the screen.
-          animation: 'fade',
-          animationDuration: 180,
+          // No transition at all: pages swap in place, the way a tab switch
+          // does. Any fade or slide shows a flicker on Android.
+          animation: 'none',
         }}
       >
         <Stack.Screen name="index" />
