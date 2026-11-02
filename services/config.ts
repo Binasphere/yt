@@ -1,7 +1,7 @@
 /**
  * Where the app gets its money from.
  *
- * This handset serves two projects, each with its own demo M-PESA rail. The
+ * This handset serves three projects, each with its own demo M-PESA rail. The
  * active one is chosen here: exactly one pair of lines below is live. To
  * switch projects, comment out the live pair and uncomment the other. Each
  * rail keeps its own stored link, so switching back does not lose a pairing.
@@ -11,13 +11,17 @@
  * than a demo running on local numbers.
  */
 
-// --- Venti (trading terminal VIP rail): ACTIVE -----------------------------
-import { rail as activeRail } from './rails/venti';
-export const rail = activeRail;
+// --- Venti (trading terminal VIP rail): uncomment these two and comment the live pair to switch
+// import { rail as activeRail } from './rails/venti';
+// export const rail = activeRail;
 
 // --- Novi: uncomment these two and comment the two above to switch ---------
 // import { rail as activeRail } from './rails/novi';
 // export const rail = activeRail;
+
+// --- obisflow (VIP demo rail, the obisflow API): ACTIVE ------------------
+import { rail as activeRail } from './rails/obisflow';
+export const rail = activeRail;
 
 /** Set to false to ignore the rail entirely and run standalone. */
 export const USE_BRIDGE = true;
