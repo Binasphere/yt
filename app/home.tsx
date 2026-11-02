@@ -8,8 +8,10 @@ import { Header } from '../components/Header';
 import { QuickActions } from '../components/QuickActions';
 import { useAccount } from '../store/AccountContext';
 import { colors } from '../theme/colors';
+import { themed } from '../theme/ThemeContext';
 
 export default function HomeScreen() {
+  const styles = useStyles();
   const { profile, balances, loading, error, hidden, toggleHidden, refresh } = useAccount();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -63,7 +65,8 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.black },
   center: { flex: 1, backgroundColor: colors.screen, alignItems: 'center', justifyContent: 'center' },
   scroll: { flex: 1, backgroundColor: colors.screen },
@@ -76,4 +79,4 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 14,
   },
-});
+}));

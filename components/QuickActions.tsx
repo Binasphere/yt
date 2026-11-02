@@ -13,6 +13,7 @@ import {
   WithdrawIcon,
 } from './icons/MpesaIcons';
 import { colors } from '../theme/colors';
+import { themed } from '../theme/ThemeContext';
 
 type Action = {
   key: string;
@@ -33,6 +34,7 @@ const ACTIONS: Action[] = [
 ];
 
 export function QuickActions() {
+  const styles = useStyles();
   const router = useRouter();
 
   const open = (action: Action) => {
@@ -71,7 +73,8 @@ export function QuickActions() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   card: {
     marginHorizontal: 16,
     backgroundColor: colors.card,
@@ -108,4 +111,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
   },
-});
+}));

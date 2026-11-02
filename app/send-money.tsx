@@ -7,9 +7,9 @@ import {
   AmountField,
   Favourites,
   Field,
-  fieldStyles,
+  useFieldStyles,
   PaymentMethods,
-  payStyles,
+  usePayStyles,
   Segmented,
   Swoosh,
 } from '../components/PayForm';
@@ -19,6 +19,7 @@ import { QrIcon } from '../components/icons/MpesaIcons';
 import { useAccount } from '../store/AccountContext';
 import { colors } from '../theme/colors';
 import { formatKsh } from '../theme/layout';
+import { themed } from '../theme/ThemeContext';
 
 const MODES = [
   ['mobile', 'Mobile number'],
@@ -41,6 +42,9 @@ function isValidPhone(raw: string): boolean {
 }
 
 export default function SendMoneyScreen() {
+  const payStyles = usePayStyles();
+  const fieldStyles = useFieldStyles();
+  const styles = useStyles();
   const router = useRouter();
   const { balances } = useAccount();
   const [mode, setMode] = useState<Mode>('mobile');
@@ -137,7 +141,8 @@ export default function SendMoneyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   doMore: { marginTop: 28, marginBottom: 12 },
   doCard: {
     width: 104,
@@ -156,4 +161,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   doLabel: { color: colors.text, fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 17 },
-});
+}));

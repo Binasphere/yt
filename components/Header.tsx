@@ -3,6 +3,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BellIcon, SearchIcon } from './icons/MpesaIcons';
 import { colors } from '../theme/colors';
+import { themed } from '../theme/ThemeContext';
 
 function greeting(d = new Date()): string {
   const h = d.getHours();
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export function Header({ initials, firstName }: Props) {
+  const styles = useStyles();
   const router = useRouter();
   return (
     <View style={styles.row}>
@@ -54,7 +56,8 @@ export function Header({ initials, firstName }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -124,4 +127,4 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.cardAlt,
   },
-});
+}));

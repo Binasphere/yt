@@ -6,6 +6,7 @@ import { ScreenHeader } from '../components/ScreenHeader';
 import { useAccount } from '../store/AccountContext';
 import { colors } from '../theme/colors';
 import { bongaKsh, formatKsh } from '../theme/layout';
+import { themed } from '../theme/ThemeContext';
 
 /** 0712345678 → 254712345678, the way this page prints the line. */
 function intlPhone(phone: string): string {
@@ -28,6 +29,7 @@ function BalanceCard({
   value: string;
   detail: string;
 }) {
+  const styles = useStyles();
   const [open, setOpen] = useState(false);
   return (
     <Pressable
@@ -51,6 +53,7 @@ function BalanceCard({
 }
 
 export default function BalancesScreen() {
+  const styles = useStyles();
   const { profile, balances } = useAccount();
   const airtime = balances?.airtime ?? 0;
   const points = balances?.points ?? 0;
@@ -88,7 +91,8 @@ export default function BalancesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.black },
   scroll: { flex: 1, backgroundColor: colors.screen },
   content: { padding: 16, paddingTop: 10, gap: 14 },
@@ -126,4 +130,4 @@ const styles = StyleSheet.create({
   cardTitle: { flex: 1, color: colors.text, fontSize: 14.5, marginLeft: 12 },
   cardValue: { color: colors.text, fontSize: 18, fontWeight: '600', marginTop: 14 },
   cardDetail: { color: colors.textMuted, fontSize: 13, lineHeight: 19, marginTop: 10 },
-});
+}));

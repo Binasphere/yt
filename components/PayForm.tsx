@@ -16,6 +16,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import { colors } from '../theme/colors';
 import { formatKsh } from '../theme/layout';
+import { themed } from '../theme/ThemeContext';
 
 /* ── Segmented toggle ─────────────────────────────────────────────── */
 
@@ -28,6 +29,7 @@ export function Segmented<K extends string>({
   value: K;
   onChange: (k: K) => void;
 }) {
+  const styles = useStyles();
   return (
     <View style={styles.segment}>
       {options.map(([key, label]) => {
@@ -54,18 +56,19 @@ export function Segmented<K extends string>({
 /* ── Avatars ──────────────────────────────────────────────────────── */
 
 const TINTS = [
-  [colors.tintSky, colors.tintSkyText],
-  [colors.tintGreen, colors.green],
-  [colors.tintBlue, colors.tintBlueText],
-  [colors.tintPink, colors.tintPinkText],
-  [colors.tintPurple, colors.tintPurpleText],
+  ['tintSky', 'tintSkyText'],
+  ['tintGreen', 'green'],
+  ['tintBlue', 'tintBlueText'],
+  ['tintPink', 'tintPinkText'],
+  ['tintPurple', 'tintPurpleText'],
 ] as const;
 
 /** Same name, same colour, every time. */
 export function tintFor(name: string): readonly [string, string] {
   let h = 0;
   for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return TINTS[h % TINTS.length];
+  const [bg, fg] = TINTS[h % TINTS.length];
+  return [colors[bg], colors[fg]];
 }
 
 export function initialsOf(name: string): string {
@@ -75,6 +78,7 @@ export function initialsOf(name: string): string {
 }
 
 export function Avatar({ name, size = 44 }: { name: string; size?: number }) {
+  const styles = useStyles();
   const [bg, fg] = tintFor(name);
   return (
     <View
@@ -93,6 +97,7 @@ export function Avatar({ name, size = 44 }: { name: string; size?: number }) {
 /* ── Favourites strip ─────────────────────────────────────────────── */
 
 export function Favourites({ names }: { names: string[] }) {
+  const styles = useStyles();
   return (
     <>
       <View style={styles.sectionRow}>
@@ -142,6 +147,7 @@ export function Field({
   error?: boolean;
   right?: React.ReactNode;
 }) {
+  const styles = useStyles();
   return (
     <>
       <Text style={styles.label}>{label}</Text>
@@ -175,6 +181,7 @@ export function AmountField({
   fuliza: number;
   error: string | null;
 }) {
+  const styles = useStyles();
   return (
     <>
       <Field
@@ -197,10 +204,11 @@ export function AmountField({
   );
 }
 
-export const fieldStyles = StyleSheet.create({
+export const useFieldStyles = themed((colors) =>
+  StyleSheet.create({
   iconBtn: { paddingHorizontal: 6 },
   divider: { width: 1, height: 24, backgroundColor: colors.inputBorder, marginHorizontal: 6 },
-});
+}));
 
 /* ── Payment method cards ─────────────────────────────────────────── */
 
@@ -229,6 +237,7 @@ export function PaymentMethods({
   value: string;
   onChange(k: string): void;
 }) {
+  const styles = useStyles();
   const compact = methods.length > 2;
   return (
     <>
@@ -244,7 +253,7 @@ export function PaymentMethods({
             >
               {active && (
                 <View style={styles.tick}>
-                  <Ionicons name="checkmark" size={12} color={colors.text} style={styles.tickIcon} />
+                  <Ionicons name="checkmark" size={12} color={colors.white} style={styles.tickIcon} />
                 </View>
               )}
               {m.mark}
@@ -262,7 +271,8 @@ export function PaymentMethods({
   );
 }
 
-export const payStyles = StyleSheet.create({
+export const usePayStyles = themed((colors) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.black },
   flex: { flex: 1 },
   scroll: { flex: 1, backgroundColor: colors.screen },
@@ -270,9 +280,10 @@ export const payStyles = StyleSheet.create({
   continue: { marginTop: 26, height: 48 },
   sectionTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
   gap: { height: 10 },
-});
+}));
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   segment: {
     flexDirection: 'row',
     backgroundColor: colors.card,
@@ -289,7 +300,7 @@ const styles = StyleSheet.create({
   },
   segmentActive: { backgroundColor: colors.green },
   segmentText: { color: colors.text, fontSize: 14.5 },
-  segmentTextActive: { color: colors.black, fontWeight: '600' },
+  segmentTextActive: { color: colors.onGreen, fontWeight: '600' },
 
   avatar: { alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontWeight: '700' },
@@ -357,4 +368,4 @@ const styles = StyleSheet.create({
   methodName: { color: colors.text, fontSize: 14, fontWeight: '600', marginTop: 7 },
   methodNameCompact: { fontSize: 13 },
   methodSub: { color: colors.textMuted, fontSize: 12, marginTop: 3 },
-});
+}));

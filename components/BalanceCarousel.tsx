@@ -15,6 +15,7 @@ import Svg, { Path } from 'react-native-svg';
 import { EyeOffIcon } from './icons/MpesaIcons';
 import { colors } from '../theme/colors';
 import { formatKsh, layout } from '../theme/layout';
+import { themed } from '../theme/ThemeContext';
 
 const CARD_W = layout.balanceCardWidth;
 
@@ -41,6 +42,7 @@ function CardPattern() {
 }
 
 function CardShell({ children }: { children: React.ReactNode }) {
+  const styles = useStyles();
   return (
     <View style={styles.card}>
       <LinearGradient
@@ -76,6 +78,7 @@ export function BalanceCarousel({
   hidden,
   onToggleHidden,
 }: Props) {
+  const styles = useStyles();
   const router = useRouter();
   const [page, setPage] = useState(0);
   const scrollRef = useRef<ScrollViewInstance>(null);
@@ -150,7 +153,8 @@ export function BalanceCarousel({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   track: { paddingHorizontal: 16, gap: layout.balanceCardGap },
   card: {
     width: CARD_W,
@@ -191,4 +195,4 @@ const styles = StyleSheet.create({
   dot: { height: 5, borderRadius: 3 },
   dotActive: { width: 26, backgroundColor: colors.green },
   dotIdle: { width: 14, backgroundColor: '#5A6472' },
-});
+}));

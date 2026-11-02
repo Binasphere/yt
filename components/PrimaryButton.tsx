@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
 import { colors } from '../theme/colors';
+import { themed } from '../theme/ThemeContext';
 
 type Props = {
   label: string;
@@ -19,6 +20,7 @@ export function PrimaryButton({
   variant = 'solid',
   style,
 }: Props) {
+  const styles = useStyles();
   const off = disabled || loading;
   const outline = variant === 'outline';
 
@@ -34,7 +36,7 @@ export function PrimaryButton({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={outline ? colors.green : colors.black} />
+        <ActivityIndicator color={outline ? colors.green : colors.onGreen} />
       ) : (
         <Text
           style={[
@@ -50,7 +52,8 @@ export function PrimaryButton({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   btn: { height: 54, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   solid: { backgroundColor: colors.green },
   outline: { borderWidth: 1, borderColor: colors.green },
@@ -58,7 +61,7 @@ const styles = StyleSheet.create({
   outlineOff: { borderColor: colors.divider },
   pressed: { opacity: 0.75 },
   label: { fontSize: 16.5, fontWeight: '600' },
-  solidLabel: { color: colors.black },
+  solidLabel: { color: colors.onGreen },
   outlineLabel: { color: colors.green },
   labelOff: { color: colors.textFaint },
-});
+}));

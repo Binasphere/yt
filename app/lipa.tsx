@@ -7,9 +7,9 @@ import {
   AmountField,
   Favourites,
   Field,
-  fieldStyles,
+  useFieldStyles,
   PaymentMethods,
-  payStyles,
+  usePayStyles,
   Segmented,
   Swoosh,
 } from '../components/PayForm';
@@ -34,6 +34,8 @@ const FAVOURITES: Record<Mode, string[]> = {
 };
 
 export default function LipaScreen() {
+  const payStyles = usePayStyles();
+  const fieldStyles = useFieldStyles();
   const router = useRouter();
   const { balances } = useAccount();
   const [mode, setMode] = useState<Mode>('till');

@@ -3,10 +3,12 @@ import React, { useState } from 'react';
 import { LayoutAnimation, Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyAppsIcon } from './icons/MpesaIcons';
 import { colors } from '../theme/colors';
+import { themed } from '../theme/ThemeContext';
 
 const TABS = ['Apps', 'Send', 'Pay', 'Bundles', 'Withdraw'];
 
 export function Frequents() {
+  const styles = useStyles();
   const [tab, setTab] = useState('Apps');
   const [open, setOpen] = useState(true);
 
@@ -64,7 +66,8 @@ export function Frequents() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   card: {
     marginHorizontal: 16,
     marginTop: 16,
@@ -80,7 +83,7 @@ const styles = StyleSheet.create({
   tab: { paddingHorizontal: 20, paddingVertical: 11, borderRadius: 22 },
   tabActive: { backgroundColor: colors.green },
   tabText: { color: colors.text, fontSize: 16 },
-  tabTextActive: { color: colors.black, fontWeight: '600' },
+  tabTextActive: { color: colors.onGreen, fontWeight: '600' },
   empty: { flexDirection: 'row', alignItems: 'center', marginTop: 22, gap: 14 },
   emptyArt: { width: 120, gap: 9 },
   artRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -89,4 +92,4 @@ const styles = StyleSheet.create({
   emptyText: { flex: 1, color: colors.text, fontSize: 15.5, lineHeight: 22 },
   exploreBtn: { alignSelf: 'flex-end', marginTop: 14 },
   exploreText: { color: colors.green, fontSize: 16 },
-});
+}));

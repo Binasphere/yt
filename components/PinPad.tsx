@@ -3,6 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme/colors';
+import { themed } from '../theme/ThemeContext';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'];
 
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export function PinPad({ value, onChange, length = 4, onComplete, verifying = false }: Props) {
+  const styles = useStyles();
   const press = (key: string) => {
     if (verifying) return;
     Haptics.selectionAsync().catch(() => {});
@@ -123,7 +125,8 @@ export function PinPad({ value, onChange, length = 4, onComplete, verifying = fa
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 20, marginBottom: 34 },
   dot: {
     width: 15,
@@ -143,4 +146,4 @@ const styles = StyleSheet.create({
   },
   keyPressed: { opacity: 0.5 },
   keyText: { color: colors.text, fontSize: 27, fontWeight: '500' },
-});
+}));

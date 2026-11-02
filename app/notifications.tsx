@@ -7,6 +7,7 @@ import { Transaction } from '../services';
 import { useAccount } from '../store/AccountContext';
 import { colors } from '../theme/colors';
 import { formatKsh } from '../theme/layout';
+import { themed } from '../theme/ThemeContext';
 
 const TABS = ['Transaction', 'Promotions', 'System'] as const;
 type Tab = (typeof TABS)[number];
@@ -30,6 +31,7 @@ function shortDate(iso: string): string {
 }
 
 export default function NotificationsScreen() {
+  const styles = useStyles();
   const { transactions } = useAccount();
   const [tab, setTab] = useState<Tab>('Transaction');
   const [, bump] = useState(0);
@@ -104,7 +106,8 @@ export default function NotificationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.black },
   pressed: { opacity: 0.6 },
   markAll: {
@@ -135,7 +138,7 @@ const styles = StyleSheet.create({
   },
   tabActive: { backgroundColor: colors.green },
   tabText: { color: colors.text, fontSize: 14 },
-  tabTextActive: { color: colors.black, fontWeight: '600' },
+  tabTextActive: { color: colors.onGreen, fontWeight: '600' },
 
   list: { flex: 1, backgroundColor: colors.screen },
   listContent: { paddingHorizontal: 16, paddingBottom: 40, gap: 10, flexGrow: 1 },
@@ -171,4 +174,4 @@ const styles = StyleSheet.create({
 
   empty: { alignItems: 'center', paddingTop: 90, gap: 12 },
   emptyText: { color: colors.textMuted, fontSize: 14 },
-});
+}));

@@ -5,8 +5,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { colors } from '../theme/colors';
+import { themed } from '../theme/ThemeContext';
 
 export default function ComingSoonScreen() {
+  const styles = useStyles();
   const router = useRouter();
   const { title } = useLocalSearchParams<{ title?: string }>();
 
@@ -29,7 +31,8 @@ export default function ComingSoonScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.black },
   body: {
     flex: 1,
@@ -42,4 +45,4 @@ const styles = StyleSheet.create({
   title: { color: colors.text, fontSize: 20, fontWeight: '700', marginTop: 18, textAlign: 'center' },
   text: { color: colors.textMuted, fontSize: 15, lineHeight: 22, textAlign: 'center', marginTop: 12 },
   btn: { alignSelf: 'stretch', marginTop: 30 },
-});
+}));

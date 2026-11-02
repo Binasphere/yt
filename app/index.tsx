@@ -9,6 +9,7 @@ import { api } from '../services';
 import { linkWithPin, loadToken } from '../services/link';
 import { useAccount } from '../store/AccountContext';
 import { colors } from '../theme/colors';
+import { themed } from '../theme/ThemeContext';
 
 const PIN_LENGTH = 4;
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'bio', '0', 'del'];
@@ -44,6 +45,7 @@ function FingerprintIcon({ size = 30 }: { size?: number }) {
 }
 
 export default function LockScreen() {
+  const styles = useStyles();
   const router = useRouter();
   const { profile, loading: profileLoading, refresh } = useAccount();
 
@@ -292,7 +294,8 @@ export default function LockScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.black },
   top: { alignItems: 'center', paddingTop: 18, paddingHorizontal: 24 },
   heading: { color: colors.text, fontSize: 17, fontWeight: '500' },
@@ -342,4 +345,4 @@ const styles = StyleSheet.create({
   key: { width: '33.33%', height: '25%', alignItems: 'center', justifyContent: 'center' },
   keyPressed: { opacity: 0.45 },
   keyText: { color: colors.text, fontSize: 32, fontWeight: '400' },
-});
+}));

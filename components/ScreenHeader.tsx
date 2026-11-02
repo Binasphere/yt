@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme/colors';
+import { themed } from '../theme/ThemeContext';
 
 /** Round back button on the left, title centred — the M-PESA app's sub-page header. */
 export function ScreenHeader({
@@ -15,6 +16,7 @@ export function ScreenHeader({
   /** Optional action on the right (e.g. "Mark All Read"). */
   right?: React.ReactNode;
 }) {
+  const styles = useStyles();
   const router = useRouter();
   return (
     <View style={styles.row}>
@@ -35,7 +37,8 @@ export function ScreenHeader({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -65,4 +68,4 @@ const styles = StyleSheet.create({
   side: { width: 44, alignItems: 'flex-end' },
   sideWide: { width: 110 },
   sideWideLeft: { width: 66 },
-});
+}));

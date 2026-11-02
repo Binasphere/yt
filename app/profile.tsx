@@ -4,44 +4,49 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '../components/ScreenHeader';
+import { ThemeSheet } from '../components/ThemeSheet';
 import { useAccount } from '../store/AccountContext';
 import { colors } from '../theme/colors';
 import { layout } from '../theme/layout';
+import { themed } from '../theme/ThemeContext';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
-type Tile = { label: string; icon: IconName; color: string };
+type Tile = { label: string; icon: IconName; color: 'green' | 'red' };
 
 const QUICK_CARE: Tile[] = [
-  { label: 'Security Center', icon: 'shield-outline', color: colors.green },
-  { label: 'Get Puk', icon: 'lock-closed-outline', color: colors.red },
-  { label: 'Report Fraud', icon: 'warning-outline', color: colors.green },
-  { label: 'Check My Usage', icon: 'pie-chart-outline', color: colors.green },
-  { label: 'Request e-SIM', icon: 'phone-portrait-outline', color: colors.red },
-  { label: 'My Subscriptions', icon: 'calendar-outline', color: colors.green },
-  { label: 'Get Help', icon: 'chatbox-ellipses-outline', color: colors.red },
-  { label: 'Manage My Line', icon: 'apps-outline', color: colors.red },
-  { label: 'Find a Safaricom Shop', icon: 'storefront-outline', color: colors.green },
+  { label: 'Security Center', icon: 'shield-outline', color: 'green' },
+  { label: 'Get Puk', icon: 'lock-closed-outline', color: 'red' },
+  { label: 'Report Fraud', icon: 'warning-outline', color: 'green' },
+  { label: 'Check My Usage', icon: 'pie-chart-outline', color: 'green' },
+  { label: 'Request e-SIM', icon: 'phone-portrait-outline', color: 'red' },
+  { label: 'My Subscriptions', icon: 'calendar-outline', color: 'green' },
+  { label: 'Get Help', icon: 'chatbox-ellipses-outline', color: 'red' },
+  { label: 'Manage My Line', icon: 'apps-outline', color: 'red' },
+  { label: 'Find a Safaricom Shop', icon: 'storefront-outline', color: 'green' },
 ];
 
 const SETTINGS: Tile[] = [
-  { label: 'M-PESA Statements', icon: 'document-text-outline', color: colors.green },
-  { label: 'Change PIN', icon: 'keypad-outline', color: colors.red },
-  { label: 'Language', icon: 'language-outline', color: colors.green },
-  { label: 'Terms & Conditions', icon: 'reader-outline', color: colors.green },
+  { label: 'M-PESA Statements', icon: 'document-text-outline', color: 'green' },
+  { label: 'Change PIN', icon: 'keypad-outline', color: 'red' },
+  { label: 'Language', icon: 'language-outline', color: 'green' },
+  { label: 'Terms & Conditions', icon: 'reader-outline', color: 'green' },
 ];
 
-function TileIcon({ icon, color }: { icon: IconName; color: string }) {
+function TileIcon({ icon, color }: { icon: IconName; color: 'green' | 'red' }) {
+  const styles = useStyles();
   return (
     <View style={styles.tileIcon}>
-      <Ionicons name={icon} size={19} color={color} />
+      <Ionicons name={icon} size={19} color={colors[color]} />
     </View>
   );
 }
 
 export default function ProfileScreen() {
+  const styles = useStyles();
   const router = useRouter();
   const { profile } = useAccount();
   const [biometric, setBiometric] = useState(true);
+  const [themeOpen, setThemeOpen] = useState(false);
 
   const name = profile ? `${profile.firstName} ${profile.lastName}`.trim() : '';
   const open = (title: string) =>
@@ -90,18 +95,18 @@ export default function ProfileScreen() {
         {/* Quick Actions */}
         <Text style={styles.section}>Quick Actions</Text>
         <View style={styles.row2}>
-          <Pressable style={[styles.tile, styles.tileWide]} onPress={() => open('Appearance')}>
-            <TileIcon icon="sunny-outline" color={colors.green} />
+          <Pressable style={[styles.tile, styles.tileWide]} onPress={() => setThemeOpen(true)}>
+            <TileIcon icon="sunny-outline" color="green" />
             <Text style={styles.tileLabel}>Appearance</Text>
           </Pressable>
           <View style={[styles.tile, styles.tileWide]}>
             <View style={styles.bioTop}>
-              <TileIcon icon="finger-print-outline" color={colors.red} />
+              <TileIcon icon="finger-print-outline" color="red" />
               <Switch
                 value={biometric}
                 onValueChange={setBiometric}
                 trackColor={{ false: colors.skeleton, true: colors.green }}
-                thumbColor={colors.text}
+                thumbColor={colors.white}
                 style={styles.switch}
               />
             </View>
@@ -139,6 +144,8 @@ export default function ProfileScreen() {
           ))}
         </View>
       </ScrollView>
+
+      <ThemeSheet visible={themeOpen} onClose={() => setThemeOpen(false)} />
     </SafeAreaView>
   );
 }
@@ -149,7 +156,8 @@ const INNER = layout.screenWidth - 32;
 const W2 = (INNER - GAP) / 2;
 const W3 = (INNER - GAP * 2) / 3;
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.black },
   scroll: { flex: 1, backgroundColor: colors.screen },
   content: { padding: 16, paddingTop: 10, paddingBottom: 40 },
@@ -209,4 +217,4 @@ const styles = StyleSheet.create({
   bioTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   switch: { transform: [{ scale: 0.85 }] },
   tileLabel: { color: colors.text, fontSize: 13, lineHeight: 17, marginTop: 10 },
-});
+}));

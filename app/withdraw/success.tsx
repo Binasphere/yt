@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { colors } from '../../theme/colors';
 import { formatKsh } from '../../theme/layout';
+import { themed } from '../../theme/ThemeContext';
 
 /** "25/7/26 at 5:21 PM" — the format used in M-PESA confirmation messages. */
 function mpesaDate(iso: string): string {
@@ -21,6 +22,7 @@ function mpesaDate(iso: string): string {
 }
 
 export default function SuccessScreen() {
+  const styles = useStyles();
   const router = useRouter();
   const p = useLocalSearchParams<{
     receipt: string;
@@ -55,7 +57,7 @@ export default function SuccessScreen() {
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
         <View style={styles.checkOuter}>
           <View style={styles.checkInner}>
-            <Ionicons name="checkmark" size={44} color={colors.black} />
+            <Ionicons name="checkmark" size={44} color={colors.onGreen} />
           </View>
         </View>
 
@@ -94,7 +96,8 @@ export default function SuccessScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.screen },
   body: { padding: 16, paddingTop: 32, alignItems: 'center' },
   checkOuter: {
@@ -140,4 +143,4 @@ const styles = StyleSheet.create({
   smsBody: { color: colors.text, fontSize: 14, lineHeight: 21 },
   footer: { padding: 16 },
   secondaryBtn: { marginTop: 12 },
-});
+}));

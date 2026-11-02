@@ -1,8 +1,10 @@
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { QrIcon } from './icons/MpesaIcons';
 import { colors } from '../theme/colors';
+import { themed } from '../theme/ThemeContext';
 
 export function FloatingActions() {
+  const styles = useStyles();
   return (
     <View style={styles.wrap} pointerEvents="box-none">
       <Pressable style={styles.zuri} hitSlop={4}>
@@ -19,7 +21,8 @@ export function FloatingActions() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   wrap: {
     position: 'absolute',
     right: 14,
@@ -45,4 +48,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

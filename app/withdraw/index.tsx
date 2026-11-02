@@ -2,13 +2,14 @@ import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AmountField, Field, fieldStyles, payStyles, Segmented } from '../../components/PayForm';
+import { AmountField, Field, useFieldStyles, usePayStyles, Segmented } from '../../components/PayForm';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { QrIcon } from '../../components/icons/MpesaIcons';
 import { api, ApiError, withdrawalCharge } from '../../services';
 import { useAccount } from '../../store/AccountContext';
 import { colors } from '../../theme/colors';
+import { themed } from '../../theme/ThemeContext';
 
 const MODES = [
   ['agent', 'At Agent'],
@@ -23,6 +24,9 @@ type Mode = (typeof MODES)[number][0];
  * (cost breakdown → PIN → receipt).
  */
 export default function WithdrawScreen() {
+  const payStyles = usePayStyles();
+  const fieldStyles = useFieldStyles();
+  const styles = useStyles();
   const router = useRouter();
   const { balances } = useAccount();
   const [mode, setMode] = useState<Mode>('agent');
@@ -137,8 +141,9 @@ export default function WithdrawScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   spacer: { height: 10 },
   errorText: { color: colors.red, fontSize: 13, marginTop: 8 },
   continue: { marginTop: 44, height: 48 },
-});
+}));

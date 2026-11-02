@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Splash } from '../components/Splash';
 import { AccountProvider, useAccount } from '../store/AccountContext';
 import { colors } from '../theme/colors';
+import { ThemeProvider, useTheme } from '../theme/ThemeContext';
 
 /**
  * Sends the app back to the lock screen whenever it leaves the foreground.
@@ -32,33 +33,45 @@ function AutoLock() {
   return null;
 }
 
+/** Everything that has to repaint when the theme flips lives under here. */
+function ThemedApp() {
+  const { scheme } = useTheme();
+  return (
+    <>
+      <AutoLock />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.screen },
+          animation: 'slide_from_right',
+        }}
+      >
+        <Stack.Screen name="index" options={{ animation: 'fade' }} />
+        <Stack.Screen name="home" options={{ animation: 'fade' }} />
+        <Stack.Screen name="withdraw" />
+        <Stack.Screen name="statements" />
+        <Stack.Screen name="send-money" />
+        <Stack.Screen name="profile" />
+        <Stack.Screen name="lipa" />
+        <Stack.Screen name="balances" />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="coming-soon" options={{ animation: 'slide_from_bottom' }} />
+      </Stack>
+      {/* Last child, so it paints over the stack rather than under it. */}
+      <Splash />
+    </>
+  );
+}
+
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AccountProvider>
-        <AutoLock />
-        <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.screen },
-            animation: 'slide_from_right',
-          }}
-        >
-          <Stack.Screen name="index" options={{ animation: 'fade' }} />
-          <Stack.Screen name="home" options={{ animation: 'fade' }} />
-          <Stack.Screen name="withdraw" />
-          <Stack.Screen name="statements" />
-          <Stack.Screen name="send-money" />
-          <Stack.Screen name="profile" />
-          <Stack.Screen name="lipa" />
-          <Stack.Screen name="balances" />
-          <Stack.Screen name="notifications" />
-          <Stack.Screen name="coming-soon" options={{ animation: 'slide_from_bottom' }} />
-        </Stack>
-        {/* Last child, so it paints over the stack rather than under it. */}
-        <Splash />
-      </AccountProvider>
+      <ThemeProvider>
+        <AccountProvider>
+          <ThemedApp />
+        </AccountProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

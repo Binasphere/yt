@@ -9,6 +9,7 @@ import { Transaction } from '../services';
 import { useAccount } from '../store/AccountContext';
 import { colors } from '../theme/colors';
 import { formatKsh, layout } from '../theme/layout';
+import { themed } from '../theme/ThemeContext';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -16,9 +17,9 @@ const MONTHS = [
 ];
 
 const OPTIONS = [
-  { label: 'Export\nStatements', icon: 'share-outline' as const, color: colors.green },
-  { label: 'View My Spend', icon: 'pie-chart-outline' as const, color: colors.red },
-  { label: 'Statement\nVerification', icon: 'shield-checkmark-outline' as const, color: colors.green },
+  { label: 'Export\nStatements', icon: 'share-outline' as const, color: 'green' as const },
+  { label: 'View My Spend', icon: 'pie-chart-outline' as const, color: 'red' as const },
+  { label: 'Statement\nVerification', icon: 'shield-checkmark-outline' as const, color: 'green' as const },
 ];
 
 /** "Withdraw from NAIVAS AGENT" → "NAIVAS AGENT": the statement lists who, not what. */
@@ -49,6 +50,7 @@ function amountText(n: number): string {
 const TILE_W = (layout.screenWidth - 32 - 20) / 3;
 
 export default function StatementsScreen() {
+  const styles = useStyles();
   const router = useRouter();
   const { transactions } = useAccount();
   const [query, setQuery] = useState('');
@@ -102,7 +104,7 @@ export default function StatementsScreen() {
                 })
               }
             >
-              <Ionicons name={o.icon} size={22} color={o.color} />
+              <Ionicons name={o.icon} size={22} color={colors[o.color]} />
               <Text style={styles.optionLabel}>{o.label}</Text>
             </Pressable>
           ))}
@@ -183,7 +185,8 @@ export default function StatementsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.black },
   scroll: { flex: 1, backgroundColor: colors.screen },
   content: { padding: 16, paddingTop: 8, paddingBottom: 40 },
@@ -226,7 +229,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 22, height: 36, borderRadius: 18, justifyContent: 'center', backgroundColor: colors.tile },
   chipActive: { backgroundColor: colors.green },
   chipText: { color: colors.text, fontSize: 14 },
-  chipTextActive: { color: colors.black, fontWeight: '600' },
+  chipTextActive: { color: colors.onGreen, fontWeight: '600' },
 
   day: { color: colors.text, fontSize: 16, fontWeight: '600', marginTop: 24, marginBottom: 6 },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 12 },
@@ -240,4 +243,4 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', paddingTop: 50, paddingHorizontal: 30 },
   emptyTitle: { color: colors.text, fontSize: 16, fontWeight: '600' },
   emptyText: { color: colors.textMuted, fontSize: 14, textAlign: 'center', marginTop: 8, lineHeight: 20 },
-});
+}));

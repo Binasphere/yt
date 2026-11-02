@@ -9,8 +9,10 @@ import { api, ApiError, withdrawalCharge } from '../../services';
 import { useAccount } from '../../store/AccountContext';
 import { colors } from '../../theme/colors';
 import { formatKsh } from '../../theme/layout';
+import { themed } from '../../theme/ThemeContext';
 
 export default function ConfirmScreen() {
+  const styles = useStyles();
   const router = useRouter();
   const { refresh } = useAccount();
   const { agentNumber, agentName, amount } = useLocalSearchParams<{
@@ -121,7 +123,8 @@ export default function ConfirmScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = themed((colors) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.black },
   body: { flex: 1, padding: 16, paddingTop: 10, backgroundColor: colors.screen },
   card: { backgroundColor: colors.card, borderRadius: 16, paddingHorizontal: 16 },
@@ -157,4 +160,4 @@ const styles = StyleSheet.create({
   errorText: { color: colors.red, textAlign: 'center', fontSize: 14, marginTop: 6, lineHeight: 20 },
   cancel: { alignSelf: 'center', paddingVertical: 14, paddingHorizontal: 24 },
   cancelText: { color: colors.textMuted, fontSize: 16 },
-});
+}));
