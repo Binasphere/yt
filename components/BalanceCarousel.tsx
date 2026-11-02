@@ -6,6 +6,7 @@ import {
   NativeSyntheticEvent,
   Pressable,
   ScrollView,
+  type ScrollViewInstance,
   StyleSheet,
   Text,
   View,
@@ -16,6 +17,12 @@ import { colors } from '../theme/colors';
 import { formatKsh, layout } from '../theme/layout';
 
 const CARD_W = layout.balanceCardWidth;
+
+/** 512 MB, 1.25 GB — the way the app shows a bundle balance. */
+function formatData(mb: number): string {
+  if (mb >= 1024) return `${(mb / 1024).toFixed(2).replace(/\.?0+$/, '')} GB`;
+  return `${Math.round(mb)} MB`;
+}
 const SNAP = CARD_W + layout.balanceCardGap;
 
 /** Faint polygonal line pattern printed on the real balance card. */
@@ -55,14 +62,23 @@ type Props = {
   fuliza: number;
   airtime: number;
   points: number;
+  /** Data bundle balance in MB. The rail doesn't report one yet, so it defaults to 0. */
+  dataMb?: number;
   hidden: boolean;
   onToggleHidden(): void;
 };
 
-export function BalanceCarousel({ mpesa, fuliza, airtime, points, hidden, onToggleHidden }: Props) {
+export function BalanceCarousel({
+  mpesa,
+  fuliza,
+  airtime,
+  dataMb = 0,
+  hidden,
+  onToggleHidden,
+}: Props) {
   const router = useRouter();
   const [page, setPage] = useState(0);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const next = Math.round(e.nativeEvent.contentOffset.x / SNAP);
@@ -101,12 +117,26 @@ export function BalanceCarousel({ mpesa, fuliza, airtime, points, hidden, onTogg
 
         <CardShell>
           <Text style={styles.label}>My Balances</Text>
-          <Text style={styles.sub}>Airtime</Text>
-          <View style={styles.amountRow}>
-            <Text style={styles.amount}>{hidden ? `Ksh. ${mask}` : formatKsh(airtime, 'Ksh.')}</Text>
+          <View style={styles.columns}>
+            <View style={styles.column}>
+              <Text style={styles.sub}>Airtime</Text>
+              <Text style={styles.amountSmall} numberOfLines={1} adjustsFontSizeToFit>
+                {hidden ? `Ksh. ${mask}` : formatKsh(airtime, 'Ksh.')}
+              </Text>
+            </View>
+            <View style={styles.columnLine} />
+            <View style={[styles.column, styles.columnRight]}>
+              <Text style={styles.sub}>Data</Text>
+              <Text style={styles.amountSmall} numberOfLines={1} adjustsFontSizeToFit>
+                {hidden ? mask : formatData(dataMb)}
+              </Text>
+            </View>
           </View>
-          <Pressable style={styles.outlineBtn}>
-            <Text style={styles.outlineBtnText}>Bonga Points: {points}</Text>
+          <Pressable
+            style={styles.outlineBtn}
+            onPress={() => router.push('/balances')}
+          >
+            <Text style={styles.outlineBtnText}>View all balances</Text>
           </Pressable>
         </CardShell>
       </ScrollView>
@@ -130,15 +160,20 @@ const styles = StyleSheet.create({
   },
   edge: { width: 5 },
   cardInner: { flex: 1, backgroundColor: colors.card, overflow: 'hidden' },
-  cardContent: { paddingHorizontal: 18, paddingTop: 14, paddingBottom: 14 },
+  cardContent: { paddingHorizontal: 18, paddingTop: 11, paddingBottom: 11 },
   label: { color: colors.green, fontSize: 15, fontWeight: '600' },
-  amountRow: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
+  amountRow: { flexDirection: 'row', alignItems: 'center', marginTop: 3 },
   amount: { color: colors.text, fontSize: 25, fontWeight: '700', letterSpacing: -0.2 },
+  amountSmall: { color: colors.text, fontSize: 21, fontWeight: '700', marginTop: 2 },
+  columns: { flexDirection: 'row', alignItems: 'stretch' },
+  column: { flex: 1 },
+  columnRight: { paddingLeft: 16 },
+  columnLine: { width: 1, backgroundColor: colors.divider, marginTop: 8, marginLeft: 12 },
   eye: { marginLeft: 14 },
-  sub: { color: colors.textMuted, fontSize: 15, marginTop: 5 },
+  sub: { color: colors.textMuted, fontSize: 15, marginTop: 3 },
   outlineBtn: {
-    marginTop: 12,
-    height: 46,
+    marginTop: 10,
+    height: 40,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.green,

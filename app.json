@@ -8,11 +8,6 @@
     "icon": "./assets/mpesa-icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#000000",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
-    },
     "ios": {
       "supportsTablet": false
     },
@@ -31,7 +26,16 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF",
+          "imageWidth": 260
+        }
+      ]
     ],
     "extra": {
       "router": {},
