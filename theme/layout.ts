@@ -19,3 +19,8 @@ export function formatKsh(amount: number, prefix = 'Ksh'): string {
   const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return `${prefix} ${amount < 0 ? '-' : ''}${grouped}.${cents}`;
 }
+
+/** Bonga points redeem at 0.2 Ksh a point, in whole shillings: 253 points → Ksh 50. */
+export function bongaKsh(points: number): number {
+  return Math.floor(points * 0.2);
+}

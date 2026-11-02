@@ -49,6 +49,11 @@ export default function RootLayout() {
           <Stack.Screen name="home" options={{ animation: 'fade' }} />
           <Stack.Screen name="withdraw" />
           <Stack.Screen name="statements" />
+          <Stack.Screen name="send-money" />
+          <Stack.Screen name="profile" />
+          <Stack.Screen name="lipa" />
+          <Stack.Screen name="balances" />
+          <Stack.Screen name="notifications" />
           <Stack.Screen name="coming-soon" options={{ animation: 'slide_from_bottom' }} />
         </Stack>
         {/* Last child, so it paints over the stack rather than under it. */}

@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BellIcon, SearchIcon } from './icons/MpesaIcons';
@@ -16,25 +17,32 @@ type Props = {
 };
 
 export function Header({ initials, firstName }: Props) {
+  const router = useRouter();
   return (
     <View style={styles.row}>
-      <View style={styles.avatarWrap}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{initials}</Text>
+      {/* Avatar + name open the profile, like the real app. */}
+      <Pressable
+        style={({ pressed }) => [styles.profileTap, pressed && styles.profilePressed]}
+        onPress={() => router.push('/profile')}
+      >
+        <View style={styles.avatarWrap}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initials}</Text>
+          </View>
+          <View style={styles.avatarBadge}>
+            <View style={styles.avatarBadgeDot} />
+          </View>
         </View>
-        <View style={styles.avatarBadge}>
-          <View style={styles.avatarBadgeDot} />
+
+        <View style={styles.greetingWrap}>
+          <Text style={styles.greeting}>{greeting()}</Text>
+          <Text style={styles.name} numberOfLines={1}>
+            {firstName} <Text style={styles.wave}>👋</Text>
+          </Text>
         </View>
-      </View>
+      </Pressable>
 
-      <View style={styles.greetingWrap}>
-        <Text style={styles.greeting}>{greeting()}</Text>
-        <Text style={styles.name} numberOfLines={1}>
-          {firstName} <Text style={styles.wave}>👋</Text>
-        </Text>
-      </View>
-
-      <Pressable style={styles.iconBtn} hitSlop={6}>
+      <Pressable style={styles.iconBtn} hitSlop={6} onPress={() => router.push('/notifications')}>
         <BellIcon size={23} />
         <View style={styles.notifDot} />
       </Pressable>
@@ -89,6 +97,8 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: '#E8407A',
   },
+  profileTap: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  profilePressed: { opacity: 0.6 },
   greetingWrap: { flex: 1, marginLeft: 12 },
   greeting: { color: colors.text, fontSize: 16, opacity: 0.95 },
   name: { color: colors.text, fontSize: 21, fontWeight: '700', marginTop: 1 },

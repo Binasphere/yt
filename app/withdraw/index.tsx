@@ -1,141 +1,144 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AmountField, Field, fieldStyles, payStyles, Segmented } from '../../components/PayForm';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { api, ApiError, DEMO_AGENTS } from '../../services';
+import { QrIcon } from '../../components/icons/MpesaIcons';
+import { api, ApiError, withdrawalCharge } from '../../services';
+import { useAccount } from '../../store/AccountContext';
 import { colors } from '../../theme/colors';
 
-export default function AgentNumberScreen() {
-  const router = useRouter();
-  const [agentNumber, setAgentNumber] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const MODES = [
+  ['agent', 'At Agent'],
+  ['atm', 'From ATM'],
+  ['ziidi', 'From Ziidi'],
+] as const;
+type Mode = (typeof MODES)[number][0];
 
-  const valid = agentNumber.length >= 5;
+/**
+ * Withdraw money, one screen like the real app: agent, store, amount. The
+ * agent is looked up on Continue, and the confirm screen takes it from there
+ * (cost breakdown → PIN → receipt).
+ */
+export default function WithdrawScreen() {
+  const router = useRouter();
+  const { balances } = useAccount();
+  const [mode, setMode] = useState<Mode>('agent');
+  const [agentNumber, setAgentNumber] = useState('');
+  const [store, setStore] = useState('');
+  const [raw, setRaw] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [agentError, setAgentError] = useState<string | null>(null);
+
+  const balance = balances?.mpesa ?? 0;
+  const fuliza = balances?.fuliza ?? 0;
+  const amount = Number(raw || 0);
+
+  const amountError = useMemo(() => {
+    if (!raw) return null;
+    if (amount < 50) return 'The minimum withdrawal amount is Ksh 50.';
+    if (amount + withdrawalCharge(amount) > balance)
+      return 'Amount plus charges is more than your balance.';
+    return null;
+  }, [raw, amount, balance]);
+
+  const valid = agentNumber.length >= 5 && store.length > 0 && amount > 0 && !amountError;
 
   const next = async () => {
     setBusy(true);
-    setError(null);
+    setAgentError(null);
     try {
       const agent = await api.lookupAgent(agentNumber.trim());
       router.push({
-        pathname: '/withdraw/amount',
-        params: { agentNumber: agent.agentNumber, agentName: agent.name },
+        pathname: '/withdraw/confirm',
+        params: { agentNumber: agent.agentNumber, agentName: agent.name, amount: String(amount) },
       });
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Could not verify that agent.');
+      setAgentError(e instanceof ApiError ? e.message : 'Could not verify that agent.');
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <ScreenHeader title="Withdraw Money" />
+    <SafeAreaView style={payStyles.safe} edges={['top', 'bottom']}>
+      <ScreenHeader title="Withdraw money" />
       <KeyboardAvoidingView
-        style={styles.flex}
+        style={payStyles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          <Text style={styles.label}>Agent Number</Text>
-          <TextInput
-            style={[styles.input, !!error && styles.inputError]}
+        <ScrollView
+          style={payStyles.scroll}
+          contentContainerStyle={payStyles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Segmented
+            options={MODES}
+            value={mode}
+            onChange={(m) =>
+              m === 'agent'
+                ? setMode(m)
+                : router.push({
+                    pathname: '/coming-soon',
+                    params: { title: m === 'atm' ? 'Withdraw from ATM' : 'Withdraw from Ziidi' },
+                  })
+            }
+          />
+
+          <View style={styles.spacer} />
+
+          <Field
+            label="Enter agent number"
+            placeholder="Enter agent number"
             value={agentNumber}
             onChangeText={(t) => {
               setAgentNumber(t.replace(/[^0-9]/g, ''));
-              setError(null);
+              setAgentError(null);
             }}
-            placeholder="Enter agent number"
-            placeholderTextColor={colors.textFaint}
-            keyboardType="number-pad"
             maxLength={10}
-            autoFocus
-          />
-          {error && <Text style={styles.errorText}>{error}</Text>}
-
-          <Text style={styles.hint}>
-            Ask the agent for their number, or pick a recent one below.
-          </Text>
-
-          <View style={styles.agentList}>
-            {DEMO_AGENTS.map((a) => (
-              <Pressable
-                key={a.number}
-                style={({ pressed }) => [styles.agentRow, pressed && styles.agentRowPressed]}
-                onPress={() => {
-                  setAgentNumber(a.number);
-                  setError(null);
-                }}
-              >
-                <View style={styles.agentAvatar}>
-                  <Text style={styles.agentAvatarText}>{a.name.slice(0, 1)}</Text>
-                </View>
-                <View style={styles.flex}>
-                  <Text style={styles.agentName}>{a.name}</Text>
-                  <Text style={styles.agentNumber}>Agent {a.number}</Text>
-                </View>
+            error={!!agentError}
+            right={
+              <Pressable hitSlop={6} style={fieldStyles.iconBtn}>
+                <QrIcon size={21} />
               </Pressable>
-            ))}
-          </View>
-        </ScrollView>
+            }
+          />
+          {agentError && <Text style={styles.errorText}>{agentError}</Text>}
 
-        <View style={styles.footer}>
-          <PrimaryButton label="Continue" onPress={next} disabled={!valid} loading={busy} />
-        </View>
+          <Field
+            label="Enter store number"
+            placeholder="Enter store number"
+            value={store}
+            onChangeText={(t) => setStore(t.replace(/[^0-9]/g, ''))}
+            maxLength={10}
+          />
+
+          <AmountField
+            value={raw}
+            onChange={setRaw}
+            balance={balance}
+            fuliza={fuliza}
+            error={amountError}
+          />
+
+          <PrimaryButton
+            label="Continue"
+            disabled={!valid}
+            loading={busy}
+            style={styles.continue}
+            onPress={next}
+          />
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.black },
-  flex: { flex: 1 },
-  body: { padding: 16, paddingTop: 10, backgroundColor: colors.screen, flexGrow: 1 },
-  label: { color: colors.textMuted, fontSize: 14, marginBottom: 8 },
-  input: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.divider,
-    paddingHorizontal: 16,
-    height: 58,
-    color: colors.text,
-    fontSize: 20,
-    letterSpacing: 1.5,
-  },
-  inputError: { borderColor: colors.red },
-  errorText: { color: colors.red, fontSize: 14, marginTop: 8 },
-  hint: { color: colors.textMuted, fontSize: 14, marginTop: 18, lineHeight: 20 },
-  agentList: { marginTop: 12, gap: 2 },
-  agentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 4,
-  },
-  agentRowPressed: { opacity: 0.6 },
-  agentAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.tile,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  agentAvatarText: { color: colors.green, fontSize: 18, fontWeight: '700' },
-  agentName: { color: colors.text, fontSize: 16 },
-  agentNumber: { color: colors.textMuted, fontSize: 13.5, marginTop: 2 },
-  footer: { padding: 16, backgroundColor: colors.screen },
+  spacer: { height: 10 },
+  errorText: { color: colors.red, fontSize: 13, marginTop: 8 },
+  continue: { marginTop: 44, height: 48 },
 });

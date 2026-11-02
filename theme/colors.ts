@@ -29,6 +29,18 @@ export const colors = {
   avatarBg: '#5C2E1C',
   avatarText: '#E8845C',
 
+  // Contact / profile avatars (dark-theme versions of the app's pastel chips)
+  tintPink: '#3A1E26',
+  tintPinkText: '#F06A8A',
+  tintSky: '#16303D',
+  tintSkyText: '#6EC6F0',
+  tintBlue: '#1C2742',
+  tintBlueText: '#5B8DEF',
+  tintGreen: '#14301F',
+  tintPurple: '#2A2145',
+  tintPurpleText: '#9B7BF0',
+  inputBorder: '#3A3A3A',
+
   overlay: 'rgba(0,0,0,0.72)',
 } as const;
 

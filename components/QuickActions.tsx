@@ -22,8 +22,8 @@ type Action = {
 };
 
 const ACTIONS: Action[] = [
-  { key: 'send', label: 'Send\nMoney', Icon: SendMoneyIcon },
-  { key: 'lipa', label: 'Lipa na\nM-PESA', Icon: LipaNaMpesaIcon },
+  { key: 'send', label: 'Send\nMoney', Icon: SendMoneyIcon, route: '/send-money' },
+  { key: 'lipa', label: 'Lipa na\nM-PESA', Icon: LipaNaMpesaIcon, route: '/lipa' },
   { key: 'withdraw', label: 'Withdraw\nMoney', Icon: WithdrawIcon, route: '/withdraw' },
   { key: 'bundles', label: 'Buy\nBundles', Icon: BuyBundlesIcon },
   { key: 'intl', label: 'International\nTransfers', Icon: InternationalIcon },

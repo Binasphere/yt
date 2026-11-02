@@ -18,6 +18,8 @@ import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
 
 const HOLD_MS = 1400;
 const FADE_MS = 420;
+/** Keep in step with expo-splash-screen's imageWidth in app.json. */
+const SPLASH_WIDTH = 260;
 
 export function Splash() {
   const [gone, setGone] = useState(false);
@@ -68,8 +70,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  /**
+   * The artwork is a full portrait canvas with the logo across most of its
+   * width, so drawing it edge to edge made the wordmark look zoomed in. A fixed
+   * width shrinks the logo to about 57% of a typical screen, and matches the
+   * native splash's `imageWidth` in app.json so there is no jump between them.
+   */
   mark: {
-    width: '100%',
-    height: '100%',
+    width: SPLASH_WIDTH,
+    height: SPLASH_WIDTH * (1334 / 750),
   },
 });
