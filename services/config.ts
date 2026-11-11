@@ -19,6 +19,10 @@
 // import { rail as activeRail } from './rails/novi';
 // export const rail = activeRail;
 
+// --- Kora (KoraBinary, LyraBinary, VexaBinary): uncomment these two and comment the live pair to switch
+// import { rail as activeRail } from './rails/kora';
+// export const rail = activeRail;
+
 // --- obisflow (VIP demo rail, the obisflow API): ACTIVE ------------------
 import { rail as activeRail } from './rails/obisflow';
 export const rail = activeRail;
