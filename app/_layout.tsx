@@ -2,7 +2,7 @@ import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import React, { useEffect } from 'react';
-import { AppState } from 'react-native';
+import { AppState, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Splash } from '../components/Splash';
 import { AccountProvider, useAccount } from '../store/AccountContext';
@@ -68,6 +68,10 @@ function ThemedApp() {
         <Stack.Screen name="notifications" />
         <Stack.Screen name="coming-soon" />
       </Stack>
+      {/* Always on screen: this is a demo app and must never pass for the real one. */}
+      <View pointerEvents="none" style={styles.demoWrap}>
+        <Text style={styles.demoTag}>DEMO</Text>
+      </View>
       {/* Last child, so it paints over the stack rather than under it. */}
       <Splash />
     </>
@@ -85,3 +89,8 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  demoWrap: { position: 'absolute', top: 36, left: 0, right: 0, alignItems: 'center', zIndex: 999, elevation: 999 },
+  demoTag: { backgroundColor: '#D32F2F', color: '#fff', fontWeight: '700', fontSize: 12, letterSpacing: 1, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10, overflow: 'hidden' },
+});

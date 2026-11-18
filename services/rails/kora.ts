@@ -1,18 +1,17 @@
 import { Rail, localPhone, splitHolder } from './types';
 
 /**
- * Kora's VIP demo rail: the Kora API, shared by KoraBinary, LyraBinary and
- * VexaBinary (a copy of the Novi API, so the same routes under `/mpesa/*`).
+ * Kivo's VIP demo rail: the Kivo API (sitesbackend), shared by KivoBinary,
+ * VeraBinary and ZenyTrade (a copy of the Novi API, so the same routes under `/mpesa/*`).
  *
  * Fuliza is tracked by the server here: an admin sets a limit per wallet in
- * the Kora admin console, so the phone shows what the server says is left.
+ * the Kivo admin console, so the phone shows what the server says is left.
  */
 export const rail: Rail = {
-  name: 'Kora',
-  // TODO: the Kora API's Render URL once it is deployed.
-  baseUrl: 'https://kora-api.onrender.com',
-  tokenKey: 'kora.mpesa.deviceToken',
-  pinKey: 'kora.mpesa.pin',
+  name: 'Kivo',
+  baseUrl: 'https://sitesbackend.onrender.com',
+  tokenKey: 'kivo.mpesa.deviceToken',
+  pinKey: 'kivo.mpesa.pin',
   paths: {
     link: '/mpesa/link',
     account: '/mpesa/account',
