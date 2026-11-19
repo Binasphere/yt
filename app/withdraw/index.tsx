@@ -82,14 +82,10 @@ export default function WithdrawScreen() {
           <Segmented
             options={MODES}
             value={mode}
-            onChange={(m) =>
-              m === 'agent'
-                ? setMode(m)
-                : router.push({
-                    pathname: '/coming-soon',
-                    params: { title: m === 'atm' ? 'Withdraw from ATM' : 'Withdraw from Ziidi' },
-                  })
-            }
+            onChange={(m) => {
+              // ATM and Ziidi have no pages yet: tapping them leaves Agent selected.
+              if (m === 'agent') setMode(m);
+            }}
           />
 
           <View style={styles.spacer} />

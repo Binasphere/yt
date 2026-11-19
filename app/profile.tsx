@@ -69,10 +69,12 @@ export default function ProfileScreen() {
       ]
     );
 
-  const open = (title: string) =>
-    title === 'M-PESA Statements'
-      ? router.push('/statements')
-      : router.push({ pathname: '/coming-soon', params: { title } });
+  // Only tiles with a page of their own respond; the rest do nothing when tapped.
+  const ROUTES: Record<string, string> = { 'M-PESA Statements': '/statements' };
+  const open = (title: string) => {
+    const route = ROUTES[title];
+    if (route) router.push(route as never);
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -148,8 +150,8 @@ export default function ProfileScreen() {
           {QUICK_CARE.map((t) => (
             <Pressable
               key={t.label}
-              style={({ pressed }) => [styles.tile, styles.tile3, pressed && styles.pressed]}
-              onPress={() => open(t.label)}
+              style={[styles.tile, styles.tile3]}
+              disabled
             >
               <TileIcon icon={t.icon} color={t.color} />
               <Text style={styles.tileLabel}>{t.label}</Text>
@@ -163,7 +165,12 @@ export default function ProfileScreen() {
           {SETTINGS.map((t) => (
             <Pressable
               key={t.label}
-              style={({ pressed }) => [styles.tile, styles.tileWide, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.tile,
+                styles.tileWide,
+                pressed && ROUTES[t.label] && styles.pressed,
+              ]}
+              disabled={!ROUTES[t.label]}
               onPress={() => open(t.label)}
             >
               <TileIcon icon={t.icon} color={t.color} />

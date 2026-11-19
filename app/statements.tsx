@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -51,7 +50,6 @@ const TILE_W = (layout.screenWidth - 32 - 20) / 3;
 
 export default function StatementsScreen() {
   const styles = useStyles();
-  const router = useRouter();
   const { transactions } = useAccount();
   const [query, setQuery] = useState('');
 
@@ -96,13 +94,8 @@ export default function StatementsScreen() {
           {OPTIONS.map((o) => (
             <Pressable
               key={o.label}
-              style={({ pressed }) => [styles.option, pressed && styles.pressed]}
-              onPress={() =>
-                router.push({
-                  pathname: '/coming-soon',
-                  params: { title: o.label.replace('\n', ' ') },
-                })
-              }
+              style={styles.option}
+              disabled
             >
               <Ionicons name={o.icon} size={22} color={colors[o.color]} />
               <Text style={styles.optionLabel}>{o.label}</Text>

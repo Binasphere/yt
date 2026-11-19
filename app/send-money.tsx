@@ -126,7 +126,7 @@ export default function SendMoneyScreen() {
               <Pressable
                 key={d.label}
                 style={styles.doCard}
-                onPress={() => soon(d.label.replace('\n', ' '))}
+                disabled
               >
                 <View style={styles.doCircle}>
                   <Ionicons name={d.icon} size={19} color={colors.green} />
