@@ -37,12 +37,9 @@ export function QuickActions() {
   const styles = useStyles();
   const router = useRouter();
 
+  // Only actions with a page of their own respond; the rest do nothing when tapped.
   const open = (action: Action) => {
-    router.push(
-      action.route
-        ? (action.route as never)
-        : ({ pathname: '/coming-soon', params: { title: action.label.replace('\n', ' ') } } as never)
-    );
+    if (action.route) router.push(action.route as never);
   };
 
   return (
@@ -59,7 +56,8 @@ export function QuickActions() {
         {ACTIONS.map((a) => (
           <Pressable
             key={a.key}
-            style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
+            style={({ pressed }) => [styles.item, pressed && a.route && styles.itemPressed]}
+            disabled={!a.route}
             onPress={() => open(a)}
           >
             <View style={styles.circle}>
