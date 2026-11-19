@@ -19,13 +19,13 @@
 // import { rail as activeRail } from './rails/novi';
 // export const rail = activeRail;
 
-// --- Kivo (KivoBinary, VeraBinary, ZenyTrade; sitesbackend): ACTIVE ----
-import { rail as activeRail } from './rails/kora';
-export const rail = activeRail;
-
-// --- obisflow (VIP demo rail, the obisflow API): uncomment these two and comment the live pair to switch
-// import { rail as activeRail } from './rails/obisflow';
+// --- Kivo (KivoBinary, VeraBinary, ZenyTrade; sitesbackend): uncomment these two and comment the live pair to switch
+// import { rail as activeRail } from './rails/kora';
 // export const rail = activeRail;
+
+// --- obisflow (VIP demo rail, the obisflow API): ACTIVE ------------------
+import { rail as activeRail } from './rails/obisflow';
+export const rail = activeRail;
 
 /** Set to false to ignore the rail entirely and run standalone. */
 export const USE_BRIDGE = true;
