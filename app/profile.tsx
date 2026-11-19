@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NameSheet } from '../components/NameSheet';
 import { ScreenHeader } from '../components/ScreenHeader';
@@ -45,12 +45,30 @@ function TileIcon({ icon, color }: { icon: IconName; color: 'green' | 'red' }) {
 export default function ProfileScreen() {
   const styles = useStyles();
   const router = useRouter();
-  const { profile } = useAccount();
+  const { profile, logout } = useAccount();
   const [biometric, setBiometric] = useState(true);
   const [themeOpen, setThemeOpen] = useState(false);
   const [nameOpen, setNameOpen] = useState(false);
 
   const name = profile ? `${profile.firstName} ${profile.lastName}`.trim() : '';
+  const confirmLogout = () =>
+    Alert.alert(
+      'Log out',
+      'This unlinks the phone from this account. You will need a PIN to link an account again.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log out',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            if (router.canDismiss()) router.dismissAll();
+            router.replace('/');
+          },
+        },
+      ]
+    );
+
   const open = (title: string) =>
     title === 'M-PESA Statements'
       ? router.push('/statements')
@@ -153,6 +171,14 @@ export default function ProfileScreen() {
             </Pressable>
           ))}
         </View>
+
+        <Pressable
+          hitSlop={8}
+          style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
+          onPress={confirmLogout}
+        >
+          <Text style={styles.logoutText}>Log out</Text>
+        </Pressable>
       </ScrollView>
 
       <ThemeSheet visible={themeOpen} onClose={() => setThemeOpen(false)} />
@@ -237,4 +263,6 @@ const useStyles = themed((colors) =>
   bioTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   switch: { transform: [{ scale: 0.85 }] },
   tileLabel: { color: colors.text, fontSize: 13, lineHeight: 17, marginTop: 10 },
+  logout: { alignSelf: 'flex-start', marginTop: 28, paddingVertical: 6 },
+  logoutText: { color: colors.red, fontSize: 16, fontWeight: '600' },
 }));

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
-import { api, Balances, POLL_INTERVAL, Profile, refreshBridge, Transaction } from '../services';
+import { api, Balances, POLL_INTERVAL, Profile, refreshBridge, Transaction, unlinkDevice } from '../services';
 
 type AccountState = {
   profile: Profile | null;
@@ -20,6 +20,8 @@ type AccountState = {
   /** Name the greeting actually shows: the device override, else the account's first name. */
   greetingName: string;
   setDisplayName(name: string | null): void;
+  /** Unlinks this phone from its account, so a different PIN can link another one. */
+  logout(): Promise<void>;
 };
 
 const DISPLAY_NAME_KEY = 'greeting-name';
@@ -115,6 +117,17 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
 
   const hideBalance = useCallback(() => setHidden(true), []);
 
+  const logout = useCallback(async () => {
+    await unlinkDevice();
+    refreshBridge();
+    setProfile(null);
+    setBalances(null);
+    setTransactions([]);
+    setHidden(true);
+    // The greeting name belonged to the old account.
+    setDisplayName(null);
+  }, [setDisplayName]);
+
   const value = useMemo<AccountState>(
     () => ({
       profile,
@@ -129,8 +142,9 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       displayName,
       greetingName: displayName ?? profile?.firstName ?? '',
       setDisplayName,
+      logout,
     }),
-    [profile, balances, transactions, loading, error, hidden, hideBalance, refresh, displayName, setDisplayName]
+    [profile, balances, transactions, loading, error, hidden, hideBalance, refresh, displayName, setDisplayName, logout]
   );
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;
