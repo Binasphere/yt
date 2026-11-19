@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { api, Balances, POLL_INTERVAL, Profile, refreshBridge, Transaction } from '../services';
@@ -14,7 +15,14 @@ type AccountState = {
   /** Forces the balance back behind the mask, whatever the eye last said. */
   hideBalance(): void;
   refresh(): Promise<void>;
+  /** Name set on the device for the home greeting; null means use the account's first name. */
+  displayName: string | null;
+  /** Name the greeting actually shows: the device override, else the account's first name. */
+  greetingName: string;
+  setDisplayName(name: string | null): void;
 };
+
+const DISPLAY_NAME_KEY = 'greeting-name';
 
 const AccountContext = createContext<AccountState | null>(null);
 
@@ -27,6 +35,24 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
   // Starts masked, every launch. The eye is the only thing that reveals it, and
   // it never stays revealed across a trip to the background.
   const [hidden, setHidden] = useState(true);
+  const [displayName, setDisplayNameState] = useState<string | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem(DISPLAY_NAME_KEY)
+      .then((v) => {
+        if (v) setDisplayNameState(v);
+      })
+      .catch(() => {});
+  }, []);
+
+  const setDisplayName = useCallback((name: string | null) => {
+    const clean = name?.trim() || null;
+    setDisplayNameState(clean);
+    (clean
+      ? AsyncStorage.setItem(DISPLAY_NAME_KEY, clean)
+      : AsyncStorage.removeItem(DISPLAY_NAME_KEY)
+    ).catch(() => {});
+  }, []);
 
   /**
    * Reads the account.
@@ -100,8 +126,11 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       toggleHidden: () => setHidden((h) => !h),
       hideBalance,
       refresh,
+      displayName,
+      greetingName: displayName ?? profile?.firstName ?? '',
+      setDisplayName,
     }),
-    [profile, balances, transactions, loading, error, hidden, hideBalance, refresh]
+    [profile, balances, transactions, loading, error, hidden, hideBalance, refresh, displayName, setDisplayName]
   );
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;

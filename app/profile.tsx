@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { NameSheet } from '../components/NameSheet';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { ThemeSheet } from '../components/ThemeSheet';
 import { useAccount } from '../store/AccountContext';
@@ -47,6 +48,7 @@ export default function ProfileScreen() {
   const { profile } = useAccount();
   const [biometric, setBiometric] = useState(true);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [nameOpen, setNameOpen] = useState(false);
 
   const name = profile ? `${profile.firstName} ${profile.lastName}`.trim() : '';
   const open = (title: string) =>
@@ -76,6 +78,14 @@ export default function ProfileScreen() {
             <Text style={styles.name} numberOfLines={1}>
               {name}
             </Text>
+            <Pressable
+              hitSlop={8}
+              style={({ pressed }) => [styles.edit, pressed && styles.pressed]}
+              onPress={() => setNameOpen(true)}
+              accessibilityLabel="Edit greeting name"
+            >
+              <Ionicons name="create-outline" size={18} color={colors.green} />
+            </Pressable>
           </View>
 
           <View style={styles.facts}>
@@ -146,6 +156,7 @@ export default function ProfileScreen() {
       </ScrollView>
 
       <ThemeSheet visible={themeOpen} onClose={() => setThemeOpen(false)} />
+      <NameSheet visible={nameOpen} onClose={() => setNameOpen(false)} />
     </SafeAreaView>
   );
 }
@@ -187,6 +198,15 @@ const useStyles = themed((colors) =>
     justifyContent: 'center',
   },
   name: { flex: 1, color: colors.text, fontSize: 18, fontWeight: '600', marginLeft: 18 },
+  edit: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.tintGreen,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+  },
   facts: { flexDirection: 'row', marginTop: 16 },
   fact: { flex: 1, alignItems: 'center' },
   factKey: { color: colors.textMuted, fontSize: 13 },

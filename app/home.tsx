@@ -12,7 +12,7 @@ import { themed } from '../theme/ThemeContext';
 
 export default function HomeScreen() {
   const styles = useStyles();
-  const { profile, balances, loading, error, hidden, toggleHidden, refresh } = useAccount();
+  const { profile, balances, loading, error, hidden, toggleHidden, refresh, greetingName } = useAccount();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -31,7 +31,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <Header initials={profile?.initials ?? '--'} firstName={profile?.firstName ?? ''} />
+      <Header initials={profile?.initials ?? '--'} firstName={greetingName} />
 
       <ScrollView
         style={styles.scroll}
